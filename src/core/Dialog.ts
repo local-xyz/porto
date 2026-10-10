@@ -8,6 +8,7 @@ import * as IO from './internal/intersectionObserver.js'
 import { logger } from './internal/logger.js'
 import type { Internal } from './internal/porto.js'
 import * as UserAgent from './internal/userAgent.js'
+import { dialogUrls } from './Domains.js'
 import * as Messenger from './Messenger.js'
 import type { QueuedRequest, Store } from './Porto.js'
 import * as ReactNativeEnvironment from './react-native/environment.js'
@@ -23,11 +24,7 @@ const AuthSessionStatus = {
 type AuthSessionStatus =
   (typeof AuthSessionStatus)[keyof typeof AuthSessionStatus]
 
-export const hostUrls = {
-  local: 'http://localhost:5175/dialog/',
-  prod: 'https://id.porto.sh/dialog',
-  stg: 'https://stg.id.porto.sh/dialog',
-} as const
+export const hostUrls = dialogUrls
 
 /** Dialog interface. */
 export type Dialog = {

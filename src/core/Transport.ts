@@ -1,12 +1,9 @@
 import { createTransport, type Transport } from 'viem'
+import { relayUrls as localProtocolRelayUrls } from './Domains.js'
 
 export { fallback, http, type Transport, webSocket } from 'viem'
 
-export const relayUrls = {
-  anvil: { http: 'http://localhost:9119' },
-  prod: { http: 'https://rpc.porto.sh' },
-  stg: { http: 'https://stg-rpc.porto.sh' },
-} as const
+export const relayUrls = localProtocolRelayUrls
 
 export function relayProxy(
   transports: relayProxy.Value,

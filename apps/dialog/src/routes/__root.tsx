@@ -396,7 +396,7 @@ function CheckUnsupportedBrowser(props: CheckUnsupportedBrowser.Props) {
       Please switch to a{' '}
       <a
         className="text-th_base underline"
-        href="https://porto.sh/sdk/faq#which-browsers-are-supported"
+        href="https://localprotocol.xyz"
         rel="noreferrer"
         target="_blank"
       >

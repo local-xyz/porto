@@ -1,8 +1,6 @@
-import { Env, Theme } from '@porto/apps'
-import * as Sentry from '@sentry/react'
+import { Theme } from '@porto/apps'
 import type { Config as WagmiConfig } from '@wagmi/core'
 import { Address } from 'ox'
-import { TrustedHosts } from 'porto/internal'
 import { Events } from 'porto/remote'
 import { Actions } from 'porto/wagmi'
 import { StrictMode } from 'react'
@@ -15,22 +13,6 @@ import * as Router from '~/lib/Router.ts'
 import * as Wagmi from '~/lib/Wagmi.ts'
 import { App } from './App.js'
 import './styles.css'
-
-if (import.meta.env.PROD) {
-  Sentry.init({
-    dsn: 'https://457697aad11614a3f667c8e61f6b9e20@o4509056062849024.ingest.us.sentry.io/4509080285741056',
-    enabled: document.referrer
-      ? TrustedHosts.hostnames.includes(new URL(document.referrer).hostname)
-      : true,
-    environment: Env.get(),
-    integrations: [
-      Sentry.replayIntegration(),
-      Sentry.tanstackRouterBrowserTracingIntegration(Router.router),
-    ],
-    replaysOnErrorSampleRate: 1.0,
-    replaysSessionSampleRate: 0.1,
-  })
-}
 
 const offInitialized = Events.onInitialized(porto, async (payload, event) => {
   const { chainIds, features, labels, mode, referrer, theme } = payload
@@ -175,15 +157,9 @@ const rootElement = document.querySelector('div#root')
 if (!rootElement) throw new Error('Root element not found')
 
 createRoot(rootElement, {
-  onCaughtError: Sentry.reactErrorHandler((error) => {
-    console.error(error)
-  }),
-  onRecoverableError: Sentry.reactErrorHandler((error) => {
-    console.error(error)
-  }),
-  onUncaughtError: Sentry.reactErrorHandler((error) => {
-    console.error(error)
-  }),
+  onCaughtError: (error) => console.error(error),
+  onRecoverableError: (error) => console.error(error),
+  onUncaughtError: (error) => console.error(error),
 }).render(
   <StrictMode>
     <App />

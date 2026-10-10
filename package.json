@@ -295,6 +295,11 @@
       "types": "./dist/core/Dialog.d.ts",
       "default": "./dist/core/Dialog.js"
     },
+    "./core/Domains": {
+      "src": "./src/core/Domains.ts",
+      "types": "./dist/core/Domains.d.ts",
+      "default": "./dist/core/Domains.js"
+    },
     "./core/Messenger": {
       "src": "./src/core/Messenger.ts",
       "types": "./dist/core/Messenger.d.ts",

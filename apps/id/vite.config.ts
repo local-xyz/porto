@@ -1,7 +1,6 @@
 import ChildProcess from 'node:child_process'
 import NodeFS from 'node:fs'
 import NodePath from 'node:path'
-import { sentryVitePlugin as SentryVitePlugin } from '@sentry/vite-plugin'
 import Tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import React from '@vitejs/plugin-react'
@@ -40,14 +39,6 @@ export default defineConfig(({ mode }) => {
     Plugins.Icons(),
     TsconfigPaths(),
     TanStackRouterVite(),
-    // must come last
-    // @see https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/sourcemaps/uploading/vite/#configuration
-    SentryVitePlugin({
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      disable: process.env.VERCEL_ENV !== 'production',
-      org: 'ithaca',
-      project: 'porto-manager',
-    }),
   ]
 
   if (mode === 'development') {

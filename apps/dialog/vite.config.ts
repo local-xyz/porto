@@ -1,6 +1,5 @@
 import ChildProcess from 'node:child_process'
 import { PortoUi } from '@porto/ui/vite-plugin'
-import { sentryVitePlugin as SentryVitePlugin } from '@sentry/vite-plugin'
 import Tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import React from '@vitejs/plugin-react'
@@ -34,14 +33,6 @@ export default defineConfig(({ mode }) => {
     TsconfigPaths(),
     TanStackRouterVite(),
     React(),
-    // must come last
-    // @see https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/sourcemaps/uploading/vite/#configuration
-    SentryVitePlugin({
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      disable: process.env.VERCEL_ENV !== 'production',
-      org: 'ithaca',
-      project: 'porto-dialog',
-    }),
   ]
 
   if (mode === 'development')
@@ -58,14 +49,6 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.ANVIL': process.env.ANVIL === 'true',
       'import.meta.env.FORCE_REDUCED_MOTION':
         process.env.FORCE_REDUCED_MOTION === 'true',
-      'import.meta.env.VITE_WORKERS_URL':
-        process.env.ANVIL === 'true'
-          ? mode === 'test'
-            ? '"http://localhost:5173"'
-            : '"https://anvil.localhost:5173"'
-          : JSON.stringify(
-              env.VITE_WORKERS_URL ?? 'https://service.porto.workers.dev',
-            ),
     },
     plugins,
     resolve: {
