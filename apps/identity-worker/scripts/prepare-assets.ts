@@ -2,10 +2,7 @@ import { cp, mkdir, rm, stat } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const workerDirectory = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-)
+const workerDirectory = join(dirname(fileURLToPath(import.meta.url)), '..')
 const appsDirectory = join(workerDirectory, '..')
 const outputDirectory = join(workerDirectory, 'dist', 'assets')
 const identityDirectory = join(appsDirectory, 'id', 'dist')

@@ -7,16 +7,17 @@ type Env = {
 }
 
 const securityHeaders = {
-  'content-security-policy': [
-    "frame-ancestors 'self'",
-    'https://localprotocol.xyz',
-    'https://www.localprotocol.xyz',
-    'https://playground.localprotocol.xyz',
-    'https://playground-staging.localprotocol.xyz',
-    'https://localprotocol-playground-staging.mperhats.workers.dev',
-    'https://localhost:*',
-    'https://*.localhost:*',
-  ].join(' ') + ';',
+  'content-security-policy':
+    [
+      "frame-ancestors 'self'",
+      'https://localprotocol.xyz',
+      'https://www.localprotocol.xyz',
+      'https://playground.localprotocol.xyz',
+      'https://playground-staging.localprotocol.xyz',
+      'https://localprotocol-playground-staging.mperhats.workers.dev',
+      'https://localhost:*',
+      'https://*.localhost:*',
+    ].join(' ') + ';',
   'cross-origin-opener-policy': 'same-origin-allow-popups',
   'cross-origin-resource-policy': 'cross-origin',
   'permissions-policy': [

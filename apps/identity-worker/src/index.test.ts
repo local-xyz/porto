@@ -39,8 +39,9 @@ describe('identity Worker', () => {
     )
 
     expect(await response.text()).toBe('identity')
-    expect(fetch.mock.calls.map(([request]) => new URL(request.url).pathname))
-      .toEqual(['/settings', '/index.html'])
+    expect(
+      fetch.mock.calls.map(([request]) => new URL(request.url).pathname),
+    ).toEqual(['/settings', '/index.html'])
   })
 
   test('uses the dialog shell for a dialog route', async () => {
@@ -54,8 +55,9 @@ describe('identity Worker', () => {
     )
 
     expect(await response.text()).toBe('dialog')
-    expect(fetch.mock.calls.map(([request]) => new URL(request.url).pathname))
-      .toEqual(['/dialog/wallet_connect', '/dialog/index.html'])
+    expect(
+      fetch.mock.calls.map(([request]) => new URL(request.url).pathname),
+    ).toEqual(['/dialog/wallet_connect', '/dialog/index.html'])
   })
 
   test('does not return an HTML shell for a missing asset', async () => {
