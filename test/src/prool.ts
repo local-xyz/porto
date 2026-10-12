@@ -1,10 +1,19 @@
 import { spawnSync } from 'node:child_process'
-import { rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { defineInstance, toArgs } from 'prool'
 import { execa } from 'prool/processes'
 import YAML from 'yaml'
+
+type RelayLock = {
+  digest: `sha256:${string}`
+  image: string
+}
+
+const relayLock = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, '../../relay.lock.json'), 'utf8'),
+) as RelayLock
 
 type RelayParameters = {
   config?: string | undefined
@@ -47,16 +56,19 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
     containerName = crypto.randomUUID(),
     endpoint,
     feeTokens,
-    image = 'ghcr.io/ithacaxyz/relay',
+    image = relayLock.image,
     interopToken,
     signersMnemonic = 'test test test test test test test test test test test junk',
-    version = process.env.VITE_RELAY_VERSION || 'latest',
+    version = process.env.VITE_RELAY_VERSION,
     ...rest
   } = args
 
   const host = 'localhost'
   const name = 'relay'
   const process_ = execa({ name })
+  const imageReference = version
+    ? `${image}:${version}`
+    : `${image}@${relayLock.digest}`
 
   let port = args.http?.port ?? 9119
 
@@ -83,7 +95,7 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
       if (!pulled) {
         spawnSync('docker', [
           'pull',
-          `${image}:${version}`,
+          imageReference,
           '--platform',
           'linux/x86_64',
         ])
@@ -123,7 +135,7 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
         `${port}:${port}`,
         '-v',
         `${configPath}:/app/relay.yaml`,
-        `${image}:${version}`,
+        imageReference,
         ...toArgs({
           ...rest,
           config: '/app/relay.yaml',

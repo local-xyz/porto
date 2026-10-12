@@ -60,10 +60,6 @@ pnpm contracts:fetch
 # Generate TypeScript bindings and the local Anvil state.
 pnpm build:contracts
 pnpm build:anvil-state
-
-# Build and test the demo contracts with Foundry.
-forge build --config-path ./contracts/demo/foundry.toml # Build
-forge test --config-path ./contracts/demo/foundry.toml # Test
 ```
 
 ## License

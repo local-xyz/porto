@@ -84,23 +84,17 @@ pnpm check:knip               # Check for unused dependencies with knip
 ### Contract Development
 
 ```bash
-# Production account artifacts
+# Contract artifacts
 pnpm contracts:fetch
 pnpm build:contracts
 pnpm build:anvil-state
-
-# Demo contracts
-foundryup --install nightly
-forge build --config-path ./contracts/demo/foundry.toml
-forge test --config-path ./contracts/demo/foundry.toml
 ```
 
 ## Directory Structure
 
 - `apps/`: Applications
-- `contracts/`: Contracts
-  - Production account artifacts come from the release in `contracts.lock.json`
-  - Demo contracts are in the `demo/` directory
+- `contracts.lock.json`: Pinned production and test contract artifacts
+- `relay.lock.json`: Pinned LocalXYZ Grid relay image and contract compatibility data
 - `src/`: `porto` library source
   - Files are represented as modules
   - Files (modules) that are not exposed to the public API are stored in an `internal/` directory

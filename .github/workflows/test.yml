@@ -57,20 +57,21 @@ jobs:
         if: inputs.relay-ref != '' && inputs.relay-release == 'true'
         env:
           GH_TOKEN: ${{ secrets.RELAY_GH_TOKEN }}
+          RELAY_REF: ${{ inputs.relay-ref }}
         run: |
           # Trigger the workflow
           gh workflow run release.yml \
-            --repo ithacaxyz/relay \
-            --ref ${{ inputs.relay-ref }}
+            --repo local-xyz/grid \
+            --ref "$RELAY_REF"
           
           sleep 5
           
           # Get the latest run ID and wait for it to complete
-          run_id=$(gh run list --repo ithacaxyz/relay --workflow=release.yml --limit=1 --json databaseId | jq -r '.[0].databaseId')
-          gh run watch $run_id --repo ithacaxyz/relay
+          run_id=$(gh run list --repo local-xyz/grid --workflow=release.yml --limit=1 --json databaseId | jq -r '.[0].databaseId')
+          gh run watch "$run_id" --repo local-xyz/grid
           
-          short_sha=$(gh run view $run_id --repo ithacaxyz/relay --json headSha | jq -r '.headSha' | cut -c 1-7)
-          echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
+          short_sha=$(gh run view "$run_id" --repo local-xyz/grid --json headSha | jq -r '.headSha' | cut -c 1-7)
+          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
 
   test:
     name: "Tests (Env: ${{ matrix.env }}, Runtime: ${{ matrix.browser == 'true' && 'Browser' || 'Node.js' }})"
@@ -109,14 +110,6 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ inputs.porto-ref }}
-
-      - name: Initialize submodules
-        if: matrix.enabled == true
-        run: |
-          git submodule update --init --recursive
-          # Configure submodules to fetch all refs
-          git submodule foreach 'git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"'
-          git submodule foreach 'git fetch --tags'
 
       - name: Install dependencies
         if: matrix.enabled == true

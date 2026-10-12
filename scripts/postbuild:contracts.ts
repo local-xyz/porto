@@ -41,14 +41,6 @@ async function writeContract(name: string, artifact: ContractArtifact) {
   await Fs.writeFile(out, code)
 }
 
-async function writeFoundryContracts(outPath: string) {
-  for (const file of await Fs.readdir(outPath)) {
-    const path = Path.resolve(outPath, file)
-    const name = Path.basename(path, '.json')
-    await writeContract(name, JSON.parse(await Fs.readFile(path, 'utf-8')))
-  }
-}
-
 // Generate the production contracts from the release pinned by contracts.lock.json.
 const contracts = await fetchContracts()
 const releaseContracts = {
@@ -57,6 +49,8 @@ const releaseContracts = {
   account_old: 'AccountOld',
   account_proxy: 'EIP7702Proxy',
   escrow: 'Escrow',
+  experiment_erc20: 'ExperimentERC20',
+  experiment_erc721: 'ExperimentERC721',
   layerzero_settler: 'LayerZeroSettler',
   multi_sig_signer: 'MultiSigSigner',
   orchestrator: 'Orchestrator',
@@ -67,16 +61,3 @@ const releaseContracts = {
 
 for (const [artifact, name] of Object.entries(releaseContracts))
   await writeContract(name, await readArtifact(contracts, artifact))
-
-// Generate Porto-owned demo contracts from local Foundry artifacts.
-for await (const file of Fs.glob(
-  Path.resolve(import.meta.dirname, '../contracts/demo/src/**/*.sol'),
-)) {
-  const name = Path.basename(file)
-  const outPath = Path.resolve(
-    import.meta.dirname,
-    '../contracts/demo/out',
-    name,
-  )
-  await writeFoundryContracts(outPath)
-}

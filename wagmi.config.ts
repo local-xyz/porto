@@ -1,6 +1,5 @@
 import * as fs from 'node:fs'
 import { defineConfig } from '@wagmi/cli'
-import { foundry } from '@wagmi/cli/plugins'
 import {
   anvil,
   anvil2,
@@ -10,6 +9,8 @@ import {
   optimismSepolia,
   sepolia,
 } from './src/core/Chains.js'
+import * as ExperimentERC20 from './src/core/internal/_generated/contracts/ExperimentERC20.js'
+import * as ExperimentERC721 from './src/core/internal/_generated/contracts/ExperimentERC721.js'
 import * as anvilAddresses from './test/src/_generated/addresses.js'
 
 // Legacy demo deployments. Keep code generation independent from a hosted Relay.
@@ -51,73 +52,43 @@ const examples = fs
 
 export default defineConfig([
   ...['apps/wagmi/src', ...examples].map((path) => ({
-    contracts: [],
-    out: `${path}/contracts.ts`,
-    plugins: [
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp1[baseSepolia.id],
-          ExperimentERC721: address.expNft[baseSepolia.id],
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp1'
-          if (name === 'ExperimentERC721') return 'expNft'
-          return name
-        },
-        project: './contracts/demo',
-      }),
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp2[baseSepolia.id],
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp2'
-          return name
-        },
-        include: ['ExperimentERC20.json'],
-        project: './contracts/demo',
-      }),
+    contracts: [
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp1[baseSepolia.id],
+        name: 'exp1',
+      },
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp2[baseSepolia.id],
+        name: 'exp2',
+      },
+      {
+        abi: ExperimentERC721.abi,
+        address: address.expNft[baseSepolia.id],
+        name: 'expNft',
+      },
     ],
+    out: `${path}/contracts.ts`,
   })),
   ...['apps/~internal', 'test/src'].map((path) => ({
-    contracts: [],
-    out: `${path}/_generated/contracts.ts`,
-    plugins: [
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp1,
-          ExperimentERC721: address.expNft,
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp1'
-          if (name === 'ExperimentERC721') return 'expNft'
-          return name
-        },
-        project: './contracts/demo',
-      }),
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp2,
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp2'
-          return name
-        },
-        include: ['ExperimentERC20.json'],
-        project: './contracts/demo',
-      }),
+    contracts: [
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp1,
+        name: 'exp1',
+      },
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp2,
+        name: 'exp2',
+      },
+      {
+        abi: ExperimentERC721.abi,
+        address: address.expNft,
+        name: 'expNft',
+      },
     ],
+    out: `${path}/_generated/contracts.ts`,
   })),
 ])
