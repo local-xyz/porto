@@ -7,7 +7,6 @@ interface Environment {
 }
 
 interface ImportMetaEnv extends Environment {
-  readonly VITE_WORKERS_URL: string
   readonly FORCE_REDUCED_MOTION: boolean
 }
 

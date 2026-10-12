@@ -58,14 +58,6 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.ANVIL': process.env.ANVIL === 'true',
       'import.meta.env.FORCE_REDUCED_MOTION':
         process.env.FORCE_REDUCED_MOTION === 'true',
-      'import.meta.env.VITE_WORKERS_URL':
-        process.env.ANVIL === 'true'
-          ? mode === 'test'
-            ? '"http://localhost:5173"'
-            : '"https://anvil.localhost:5173"'
-          : JSON.stringify(
-              env.VITE_WORKERS_URL ?? 'https://service.porto.workers.dev',
-            ),
     },
     plugins,
     resolve: {

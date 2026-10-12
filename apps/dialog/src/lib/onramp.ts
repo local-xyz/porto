@@ -1,52 +1,11 @@
-import { Env, UserAgent } from '@porto/apps'
 import { useMutation } from '@tanstack/react-query'
 import type { Hex } from 'ox'
-import { Hooks as RemoteHooks } from 'porto/remote'
 import * as React from 'react'
 import { zeroAddress } from 'viem'
 import * as z from 'zod/mini'
-import * as Dialog from './Dialog'
-import { porto } from './Porto'
 
-const hostnames = [
-  'playground.porto.sh',
-  'id.porto.sh',
-  // TODO: Waiting for domain association file
-  // 'relay.link',
-  // 'app.uniswap.org',
-]
-
-export function useShowApplePay(error: Error | null) {
-  const referrer = Dialog.useStore((state) => state.referrer)
-  const mode = Dialog.useStore((state) => state.mode)
-  const chain = RemoteHooks.useChain(porto)
-  return React.useMemo(() => {
-    if (error) return false
-    // Disallow in-app browsers
-    if (UserAgent.isInAppBrowser()) return false
-    // Disallow non-Safari mobile browsers
-    if (UserAgent.isMobile() && !UserAgent.isSafari()) return false
-    // Disallow staging environment
-    if (Env.get() === 'stg') return false
-    // Disallow testnets
-    if (chain?.testnet) return false
-    // Allow localhost
-    if (referrer?.url?.hostname.endsWith('localhost')) return true
-    // Disallow Firefox when in iframe mode
-    if (
-      UserAgent.isFirefox() &&
-      (mode === 'iframe' || mode === 'inline-iframe')
-    )
-      return false
-    // Always allow in popup mode (since using `id.porto.sh`)
-    if (mode === 'popup') return true
-    // Only allow sites that are allowlisted
-    return Boolean(
-      hostnames.includes(referrer?.url?.hostname ?? '') ||
-        // Or Vercel porto previews
-        referrer?.url?.hostname.endsWith('preview.porto.sh'),
-    )
-  }, [chain?.testnet, error, mode, referrer?.url])
+export function useShowApplePay(_error: Error | null) {
+  return false
 }
 
 export function useOnrampOrder(props: {
@@ -54,40 +13,15 @@ export function useOnrampOrder(props: {
   sandbox?: boolean | undefined
   onApprove: (result: { id: Hex.Hex }) => Promise<void> | void
 }) {
-  const { sandbox = true, onApprove } = props
+  const { onApprove } = props
 
-  const domain =
-    props.domain ??
-    Dialog.useStore((state) =>
-      state.mode === 'popup'
-        ? location.hostname
-        : state.referrer?.url?.hostname,
-    )
-  const createOrder = useMutation({
-    async mutationFn(variables: { address: string; amount: string }) {
-      const response = await fetch(
-        `${import.meta.env.VITE_WORKERS_URL}/onramp/orders`,
-        {
-          body: JSON.stringify({
-            address: variables.address,
-            amount: Number.parseFloat(variables.amount),
-            domain,
-            sandbox,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        },
-      )
-      return z.parse(
-        z.object({
-          orderId: z.string(),
-          type: z.literal('apple'),
-          url: z.string(),
-        }),
-        await response.json(),
-      )
+  const createOrder = useMutation<
+    { orderId: string; type: 'apple'; url: string },
+    Error,
+    { address: string; amount: string }
+  >({
+    async mutationFn(_variables) {
+      throw new Error('The onramp service is not configured.')
     },
     onSuccess() {
       setOnrampEvents([])
