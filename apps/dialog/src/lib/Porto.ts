@@ -19,7 +19,10 @@ const mode = ReactNative.isReactNativeRequest()
 export const porto = Porto.create({
   ...restConfig,
   mode,
-  storage: Storage.combine(Storage.cookie(), Storage.localStorage()),
+  storage:
+    import.meta.env.VITE_EPHEMERAL_STORAGE === 'true'
+      ? Storage.memory()
+      : Storage.combine(Storage.cookie(), Storage.localStorage()),
 })
 
 if (

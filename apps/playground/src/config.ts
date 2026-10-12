@@ -2,7 +2,7 @@ import { PortoConfig } from '@porto/apps'
 import { exp1Address, exp2Address } from '@porto/apps/contracts'
 import { createStore } from 'mipd'
 import { Hex, Value } from 'ox'
-import { Chains, Dialog, Mode, Porto } from 'porto'
+import { Chains, Dialog, Mode, Porto, Storage } from 'porto'
 import type { ThemeFragment } from 'porto/theme'
 import { RelayClient } from 'porto/viem'
 
@@ -154,6 +154,9 @@ export const porto = Porto.create({
   ...config,
   chains,
   merchantUrl: merchant ? '/merchant' : undefined,
+  ...(import.meta.env.VITE_EPHEMERAL_STORAGE === 'true'
+    ? { storage: Storage.memory() }
+    : {}),
   // We will be deferring mode setup until after hydration.
   mode: null,
 })

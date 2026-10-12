@@ -95,7 +95,7 @@ export default defineConfig(({ mode }) => {
 
           logger.info('Starting Anvil...')
 
-          await anvil({
+          const stopAnvil = await anvil({
             hardfork: 'osaka' as never,
             host: process.env.CI ? '0.0.0.0' : undefined,
             loadState: resolve(
@@ -104,6 +104,7 @@ export default defineConfig(({ mode }) => {
             ),
             port: anvilConfig.port,
           }).start()
+          server.httpServer?.once('close', () => void stopAnvil())
 
           logger.info('Anvil started on ' + anvilConfig.rpcUrl)
 

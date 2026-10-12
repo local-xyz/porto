@@ -21,6 +21,8 @@
     "deps": "pnpx taze -r",
     "dev": "pnpm preconstruct && pnpm --filter dialog --filter id --filter playground --filter service dev",
     "dev:anvil": "pnpm preconstruct && MKCERT_PATH=\"${MKCERT_PATH:-$(command -v mkcert)}\" ANVIL=true pnpm --filter playground --filter dialog --filter id dev",
+    "dev:anvil:ephemeral": "VITE_EPHEMERAL_STORAGE=true pnpm dev:anvil",
+    "dev:anvil:reset": "bash scripts/reset:anvil.sh",
     "dev:cli": "tsx src/cli/bin/index.ts",
     "dev:ext": "pnpm --filter extension dev",
     "dev:interop": "pnpm preconstruct && pnpm --filter dialog --filter id --filter playground-interop dev",

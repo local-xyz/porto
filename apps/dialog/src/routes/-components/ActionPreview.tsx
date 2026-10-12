@@ -438,10 +438,9 @@ function FundsNeededSection(props: {
     )
 
     const isTestnet = Boolean(chain?.testnet)
+    const isAnvil = Chains.isAnvil(deficit.chainId)
 
-    if (import.meta.env.MODE === 'test')
-      return hasDeficit && (isTestnet || Chains.isAnvil(deficit.chainId))
-    if (!isTestnet || !hasDeficit) return false
+    if ((!isTestnet && !isAnvil) || !hasDeficit) return false
 
     const tokenAddr = (deficit.assetDeficits?.[0]?.address ?? '').toLowerCase()
 
