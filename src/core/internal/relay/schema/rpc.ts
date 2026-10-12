@@ -304,18 +304,24 @@ export namespace wallet_getCapabilities {
         /** Account proxy address. */
         accountProxy: VersionedContract,
         /** Legacy account implementation address. */
-        legacyAccountImplementations: z.readonly(z.array(VersionedContract)),
+        legacyAccountImplementations: z._default(
+          z.readonly(z.array(VersionedContract)),
+          [],
+        ),
         /** Legacy orchestrator address. */
-        legacyOrchestrators: z.readonly(
-          z.array(
-            z.union([
-              z.object({
-                orchestrator: VersionedContract,
-                simulator: VersionedContract,
-              }),
-              VersionedContract,
-            ]),
+        legacyOrchestrators: z._default(
+          z.readonly(
+            z.array(
+              z.union([
+                z.object({
+                  orchestrator: VersionedContract,
+                  simulator: VersionedContract,
+                }),
+                VersionedContract,
+              ]),
+            ),
           ),
+          [],
         ),
         /** Orchestrator address. */
         orchestrator: VersionedContract,
