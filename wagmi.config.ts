@@ -1,8 +1,5 @@
 import * as fs from 'node:fs'
 import { defineConfig } from '@wagmi/cli'
-import { foundry } from '@wagmi/cli/plugins'
-import { type Address, createClient, http } from 'viem'
-import { getCapabilities } from 'viem/actions'
 import {
   anvil,
   anvil2,
@@ -12,45 +9,32 @@ import {
   optimismSepolia,
   sepolia,
 } from './src/core/Chains.js'
+import * as ExperimentERC20 from './src/core/internal/_generated/contracts/ExperimentERC20.js'
+import * as ExperimentERC721 from './src/core/internal/_generated/contracts/ExperimentERC721.js'
 import * as anvilAddresses from './test/src/_generated/addresses.js'
 
-const client = createClient({
-  transport: http('https://rpc.porto.sh'),
-})
-
-const capabilities = await getCapabilities(client)
-if (!capabilities) throw new Error('No capabilities found')
-
-const getTokenAddress = (
-  chainId: keyof typeof capabilities,
-  tokenUid: 'exp1' | 'exp2',
-) => {
-  const token = capabilities[chainId].fees.tokens.find(
-    (t: { uid: string }) => t.uid === tokenUid,
-  )
-  if (!token)
-    throw new Error(`Token ${tokenUid} not found for chain ${chainId}`)
-  return token.address as Address
-}
+// Legacy demo deployments. Keep code generation independent from a hosted Relay.
+const exp1Address = '0xfCA413a634C4dF6B98ebb970A44d9a32F8f5c64E'
+const exp2Address = '0xaCB60Ce1E9d71C15A34c3AFD903F552520B4A28f'
 
 const address = {
   exp1: {
     [anvil3.id]: anvilAddresses.exp1Address,
     [anvil.id]: anvilAddresses.exp1Address,
     [anvil2.id]: anvilAddresses.exp1Address,
-    [sepolia.id]: getTokenAddress(sepolia.id, 'exp1'),
-    [baseSepolia.id]: getTokenAddress(baseSepolia.id, 'exp1'),
-    [optimismSepolia.id]: getTokenAddress(optimismSepolia.id, 'exp1'),
-    [arbitrumSepolia.id]: getTokenAddress(arbitrumSepolia.id, 'exp1'),
+    [sepolia.id]: exp1Address,
+    [baseSepolia.id]: exp1Address,
+    [optimismSepolia.id]: exp1Address,
+    [arbitrumSepolia.id]: exp1Address,
   },
   exp2: {
     [anvil3.id]: anvilAddresses.exp2Address,
     [anvil.id]: anvilAddresses.exp2Address,
     [anvil2.id]: anvilAddresses.exp2Address,
-    [sepolia.id]: getTokenAddress(sepolia.id, 'exp2'),
-    [baseSepolia.id]: getTokenAddress(baseSepolia.id, 'exp2'),
-    [optimismSepolia.id]: getTokenAddress(optimismSepolia.id, 'exp2'),
-    [arbitrumSepolia.id]: getTokenAddress(arbitrumSepolia.id, 'exp2'),
+    [sepolia.id]: exp2Address,
+    [baseSepolia.id]: exp2Address,
+    [optimismSepolia.id]: exp2Address,
+    [arbitrumSepolia.id]: exp2Address,
   },
   expNft: {
     [anvil3.id]: anvilAddresses.expNftAddress,
@@ -65,76 +49,47 @@ const examples = fs
   .readdirSync('examples')
   .filter((dir) => fs.statSync(`examples/${dir}`).isDirectory())
   .map((dir) => `examples/${dir}/src`)
+  .filter((path) => fs.existsSync(`${path}/contracts.ts`))
 
 export default defineConfig([
   ...['apps/wagmi/src', ...examples].map((path) => ({
-    contracts: [],
-    out: `${path}/contracts.ts`,
-    plugins: [
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp1[baseSepolia.id],
-          ExperimentERC721: address.expNft[baseSepolia.id],
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp1'
-          if (name === 'ExperimentERC721') return 'expNft'
-          return name
-        },
-        project: './contracts/demo',
-      }),
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp2[baseSepolia.id],
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp2'
-          return name
-        },
-        include: ['ExperimentERC20.json'],
-        project: './contracts/demo',
-      }),
+    contracts: [
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp1[baseSepolia.id],
+        name: 'exp1',
+      },
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp2[baseSepolia.id],
+        name: 'exp2',
+      },
+      {
+        abi: ExperimentERC721.abi,
+        address: address.expNft[baseSepolia.id],
+        name: 'expNft',
+      },
     ],
+    out: `${path}/contracts.ts`,
   })),
   ...['apps/~internal', 'test/src'].map((path) => ({
-    contracts: [],
-    out: `${path}/_generated/contracts.ts`,
-    plugins: [
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp1,
-          ExperimentERC721: address.expNft,
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp1'
-          if (name === 'ExperimentERC721') return 'expNft'
-          return name
-        },
-        project: './contracts/demo',
-      }),
-      foundry({
-        deployments: {
-          ExperimentERC20: address.exp2,
-        },
-        forge: {
-          build: false,
-        },
-        getName(name) {
-          if (name === 'ExperimentERC20') return 'exp2'
-          return name
-        },
-        include: ['ExperimentERC20.json'],
-        project: './contracts/demo',
-      }),
+    contracts: [
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp1,
+        name: 'exp1',
+      },
+      {
+        abi: ExperimentERC20.abi,
+        address: address.exp2,
+        name: 'exp2',
+      },
+      {
+        abi: ExperimentERC721.abi,
+        address: address.expNft,
+        name: 'expNft',
+      },
     ],
+    out: `${path}/_generated/contracts.ts`,
   })),
 ])

@@ -63,9 +63,8 @@ pnpm dev:wagmi                 # Run `pnpm dev` with wagmi playground
 ### Testing
 
 ```bash
-foundryup --install nightly    # Foundry setup
-
-pnpm build:contracts           # Build Contracts with Foundry (optional)
+pnpm contracts:fetch           # Fetch the pinned LocalXYZ contract release
+pnpm build:contracts           # Generate contract bindings
 pnpm build:anvil-state         # Build Anvil State (optional)
 pnpm test                      # Run default test suite with Vitest
 pnpm test:browser              # Run browser-based tests (Chromium, Firefox)
@@ -85,22 +84,17 @@ pnpm check:knip               # Check for unused dependencies with knip
 ### Contract Development
 
 ```bash
-foundryup --install nightly    # Foundry setup
-
-# Account contracts
-forge build --config-path ./contracts/account/foundry.toml
-forge test --config-path ./contracts/account/foundry.toml
-
-# Demo contracts  
-forge build --config-path ./contracts/demo/foundry.toml
-forge test --config-path ./contracts/demo/foundry.toml
+# Contract artifacts
+pnpm contracts:fetch
+pnpm build:contracts
+pnpm build:anvil-state
 ```
 
 ## Directory Structure
 
 - `apps/`: Applications
-- `contracts/`: Contracts
-  - The Porto Account contracts are a submodule under the `account/` directory
+- `contracts.lock.json`: Pinned production and test contract artifacts
+- `relay.lock.json`: Pinned LocalXYZ Grid relay image and contract compatibility data
 - `src/`: `porto` library source
   - Files are represented as modules
   - Files (modules) that are not exposed to the public API are stored in an `internal/` directory
@@ -133,7 +127,7 @@ forge test --config-path ./contracts/demo/foundry.toml
 
 - **`Account`** - Viem Account abstraction for Porto Accounts
 - **`Key`** - Account key management and cryptographic operations (e.g. `secp256k1`, `p256`, `webauthn-p256`)
-- **`ContractActions`** - Actions for the Ithaca Account contract.
+- **`ContractActions`** - Actions for the LocalXYZ Account contract.
 - **`RelayActions`** - Actions for the Relay
 - **`RelayClient`** - Client helpers for the Relay
 - **`WalletActions`** - Actions for the Porto Dialog (EIP-1193 Provider)
@@ -157,7 +151,7 @@ forge test --config-path ./contracts/demo/foundry.toml
 
 ### Contracts (`contracts/`)
 
-- **`account/`** - Core account abstraction contracts
+- **`contracts.lock.json`** - Pinned LocalXYZ account artifacts
 - **`demo/`** - Demo and example contracts
 
 ## Development Workflow

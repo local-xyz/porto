@@ -54,14 +54,12 @@ pnpm test # Test
 ### Contracts
 
 ```bash
-# Install Foundry
-foundryup
+# Fetch the pinned LocalXYZ contract release.
+pnpm contracts:fetch
 
-forge build --config-path ./contracts/account/foundry.toml # Build
-forge test --config-path ./contracts/account/foundry.toml # Test
-
-forge build --config-path ./contracts/demo/foundry.toml # Build
-forge test --config-path ./contracts/demo/foundry.toml # Test
+# Generate TypeScript bindings and the local Anvil state.
+pnpm build:contracts
+pnpm build:anvil-state
 ```
 
 ## License

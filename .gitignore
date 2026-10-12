@@ -32,6 +32,7 @@ next-env.d.ts
 # forge
 contracts/**/cache
 contracts/**/out
+.contracts
 
 # next.js
 .next
