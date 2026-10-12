@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
       ? null
       : Mkcert({
           hosts: ['localhost', 'stg.localhost', 'anvil.localhost'],
+          mkcertPath: env.MKCERT_PATH || undefined,
         }),
     Tailwindcss(),
     React(),

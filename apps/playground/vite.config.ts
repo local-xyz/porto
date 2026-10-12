@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => {
         ? null
         : mkcert({
             hosts: ['localhost', 'stg.localhost', 'anvil.localhost'],
+            mkcertPath: env.MKCERT_PATH || undefined,
           }),
       react(),
       Plugins.Icons(),
