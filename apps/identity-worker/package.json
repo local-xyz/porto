@@ -1,0 +1,26 @@
+{
+  "name": "identity-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm build:staging",
+    "build:apps:production": "VITE_DEFAULT_ENV=prod VITE_DIALOG_HOST=https://id.localprotocol.xyz/dialog/ pnpm --filter id build && VITE_DEFAULT_ENV=prod pnpm --filter dialog build",
+    "build:apps:staging": "VITE_DEFAULT_ENV=stg VITE_DIALOG_HOST=https://id-staging.localprotocol.xyz/dialog/ pnpm --filter id build && VITE_DEFAULT_ENV=stg pnpm --filter dialog build",
+    "build:assets": "tsx scripts/prepare-assets.ts",
+    "build:production": "pnpm build:apps:production && pnpm build:assets",
+    "build:staging": "pnpm build:apps:staging && pnpm build:assets",
+    "build:types": "wrangler types --include-runtime=false",
+    "check:types": "tsc --noEmit",
+    "deploy:production": "pnpm build:production && wrangler deploy",
+    "deploy:staging": "pnpm build:staging && wrangler deploy --env staging",
+    "deploy:dry-run": "pnpm build:staging && wrangler deploy --env staging --dry-run",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251014.0",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "^4.45.3"
+  }
+}

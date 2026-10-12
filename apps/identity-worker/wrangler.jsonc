@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "c814b33642103450ac87d05183f14a1d",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist/assets",
+    "run_worker_first": true
+  },
+  "compatibility_date": "2026-10-10",
+  "env": {
+    "staging": {
+      "name": "localprotocol-identity-staging",
+      "preview_urls": false,
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "id-staging.localprotocol.xyz"
+        }
+      ],
+      "workers_dev": false
+    }
+  },
+  "main": "src/index.ts",
+  "name": "localprotocol-identity",
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1
+    }
+  },
+  "preview_urls": false,
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "id.localprotocol.xyz"
+    }
+  ],
+  "workers_dev": false
+}

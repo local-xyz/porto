@@ -662,6 +662,24 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.3)(vite@6.4.1(@types/node@22.15.32)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.2)(tsx@4.20.6)(yaml@2.8.1))
 
+  apps/identity-worker:
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20251014.0
+        version: 4.20251014.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.15.32
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@22.15.32)(@vitest/browser-playwright@4.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.2)(tsx@4.20.6)(yaml@2.8.1)
+      wrangler:
+        specifier: ^4.45.3
+        version: 4.45.3(@cloudflare/workers-types@4.20251014.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+
   apps/playground:
     dependencies:
       '@iconify/json':
