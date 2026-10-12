@@ -29,27 +29,33 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
 
-      - name: Get latest relay version
-        id: latest-version
+      - name: Set up Docker CLI
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Get latest Grid commit
+        id: latest-grid
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/ithacaxyz/relay/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-          echo "latest=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "Latest relay version: $LATEST_VERSION"
+          GRID_COMMIT=$(gh api repos/local-xyz/grid/commits/main --jq .sha)
+          echo "commit=$GRID_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Latest Grid commit: $GRID_COMMIT"
 
       - name: Run relay:up
-        run: |
-          echo "Updating relay from to ${{ steps.latest-version.outputs.latest }}"
-          pnpm relay:up ${{ steps.latest-version.outputs.latest }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GRID_REF: ${{ steps.latest-grid.outputs.commit }}
+        run: pnpm relay:up "$GRID_REF"
 
       - name: Check for changes
         id: changes
         run: |
           if git diff --quiet; then
             echo "No changes detected after running relay:up"
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
           else
             echo "Changes detected after running relay:up"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
             echo "Changed files:"
             git diff --name-only
           fi
@@ -60,11 +66,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
-          commit-message: 'chore: relay@v${{ steps.latest-version.outputs.latest }}'
+          commit-message: 'chore: update Grid relay'
           body: |
-            Updates Relay to v${{ steps.latest-version.outputs.latest }}.
+            Pins the LocalXYZ Grid relay image built from `${{ steps.latest-grid.outputs.commit }}`.
             
             This PR was automatically created by the [`relay-update.yml`](.github/workflows/relay-update.yml) workflow.
-          title: 'chore: update relay to v${{ steps.latest-version.outputs.latest }}'
-          branch: chore/relay-v${{ steps.latest-version.outputs.latest }}
+          title: 'chore: update Grid relay'
+          branch: chore/update-grid-relay
           delete-branch: true

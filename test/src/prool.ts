@@ -1,10 +1,19 @@
 import { spawnSync } from 'node:child_process'
-import { rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { defineInstance, toArgs } from 'prool'
 import { execa } from 'prool/processes'
 import YAML from 'yaml'
+
+type RelayLock = {
+  digest: `sha256:${string}`
+  image: string
+}
+
+const relayLock = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, '../../relay.lock.json'), 'utf8'),
+) as RelayLock
 
 type RelayParameters = {
   config?: string | undefined
@@ -18,6 +27,7 @@ type RelayParameters = {
   funderOwnerKey: string
   funder: string
   http?: {
+    addr?: string | undefined
     port?: number | undefined
     metricsPort?: number | undefined
   }
@@ -47,22 +57,24 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
     containerName = crypto.randomUUID(),
     endpoint,
     feeTokens,
-    image = 'ghcr.io/ithacaxyz/relay',
+    image = relayLock.image,
     interopToken,
     signersMnemonic = 'test test test test test test test test test test test junk',
-    version = process.env.VITE_RELAY_VERSION || 'latest',
+    version = process.env.VITE_RELAY_VERSION,
     ...rest
   } = args
 
   const host = 'localhost'
   const name = 'relay'
   const process_ = execa({ name })
+  const imageReference = version
+    ? `${image}:${version}`
+    : `${image}@${relayLock.digest}`
 
   let port = args.http?.port ?? 9119
 
   function stop() {
-    rmSync(configPath)
-    spawnSync('docker', ['rm', '-f', containerName])
+    cleanupRelay(containerName)
   }
 
   const configPath = resolve(import.meta.dirname, `relay.${containerName}.yaml`)
@@ -83,7 +95,7 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
       if (!pulled) {
         spawnSync('docker', [
           'pull',
-          `${image}:${version}`,
+          imageReference,
           '--platform',
           'linux/x86_64',
         ])
@@ -111,24 +123,22 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
       const args_ = [
         '--name',
         containerName,
-        '--network',
-        'host',
+        '--rm',
         '--platform',
         'linux/x86_64',
         '--add-host',
         'host.docker.internal:host-gateway',
-        '--add-host',
-        'localhost:host-gateway',
         '-p',
         `${port}:${port}`,
         '-v',
         `${configPath}:/app/relay.yaml`,
-        `${image}:${version}`,
+        imageReference,
         ...toArgs({
           ...rest,
           config: '/app/relay.yaml',
           constantRate: 1.0,
           http: {
+            addr: '0.0.0.0',
             metricsPort: port + 1,
             port,
           },
@@ -209,7 +219,7 @@ function createRelayConfig(opts: {
       ttl: 300,
     },
     server: {
-      address: '127.0.0.1',
+      address: '0.0.0.0',
       max_connections: 1000,
       metrics_port: 9000,
       port: 9119,
@@ -239,4 +249,11 @@ function createRelayConfig(opts: {
         }
       : {}),
   })
+}
+
+export function cleanupRelay(containerName: string) {
+  rmSync(resolve(import.meta.dirname, `relay.${containerName}.yaml`), {
+    force: true,
+  })
+  spawnSync('docker', ['rm', '-f', containerName])
 }
