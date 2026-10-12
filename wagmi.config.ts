@@ -1,8 +1,6 @@
 import * as fs from 'node:fs'
 import { defineConfig } from '@wagmi/cli'
 import { foundry } from '@wagmi/cli/plugins'
-import { type Address, createClient, http } from 'viem'
-import { getCapabilities } from 'viem/actions'
 import {
   anvil,
   anvil2,
@@ -14,43 +12,28 @@ import {
 } from './src/core/Chains.js'
 import * as anvilAddresses from './test/src/_generated/addresses.js'
 
-const client = createClient({
-  transport: http('https://rpc.porto.sh'),
-})
-
-const capabilities = await getCapabilities(client)
-if (!capabilities) throw new Error('No capabilities found')
-
-const getTokenAddress = (
-  chainId: keyof typeof capabilities,
-  tokenUid: 'exp1' | 'exp2',
-) => {
-  const token = capabilities[chainId].fees.tokens.find(
-    (t: { uid: string }) => t.uid === tokenUid,
-  )
-  if (!token)
-    throw new Error(`Token ${tokenUid} not found for chain ${chainId}`)
-  return token.address as Address
-}
+// Legacy demo deployments. Keep code generation independent from a hosted Relay.
+const exp1Address = '0xfCA413a634C4dF6B98ebb970A44d9a32F8f5c64E'
+const exp2Address = '0xaCB60Ce1E9d71C15A34c3AFD903F552520B4A28f'
 
 const address = {
   exp1: {
     [anvil3.id]: anvilAddresses.exp1Address,
     [anvil.id]: anvilAddresses.exp1Address,
     [anvil2.id]: anvilAddresses.exp1Address,
-    [sepolia.id]: getTokenAddress(sepolia.id, 'exp1'),
-    [baseSepolia.id]: getTokenAddress(baseSepolia.id, 'exp1'),
-    [optimismSepolia.id]: getTokenAddress(optimismSepolia.id, 'exp1'),
-    [arbitrumSepolia.id]: getTokenAddress(arbitrumSepolia.id, 'exp1'),
+    [sepolia.id]: exp1Address,
+    [baseSepolia.id]: exp1Address,
+    [optimismSepolia.id]: exp1Address,
+    [arbitrumSepolia.id]: exp1Address,
   },
   exp2: {
     [anvil3.id]: anvilAddresses.exp2Address,
     [anvil.id]: anvilAddresses.exp2Address,
     [anvil2.id]: anvilAddresses.exp2Address,
-    [sepolia.id]: getTokenAddress(sepolia.id, 'exp2'),
-    [baseSepolia.id]: getTokenAddress(baseSepolia.id, 'exp2'),
-    [optimismSepolia.id]: getTokenAddress(optimismSepolia.id, 'exp2'),
-    [arbitrumSepolia.id]: getTokenAddress(arbitrumSepolia.id, 'exp2'),
+    [sepolia.id]: exp2Address,
+    [baseSepolia.id]: exp2Address,
+    [optimismSepolia.id]: exp2Address,
+    [arbitrumSepolia.id]: exp2Address,
   },
   expNft: {
     [anvil3.id]: anvilAddresses.expNftAddress,

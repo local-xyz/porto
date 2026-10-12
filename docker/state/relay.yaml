@@ -10,6 +10,14 @@ chains:
         address: "0x0000000000000000000000000000000000000000"
         fee_token: true
         interop: false
+      exp:
+        address: "0x8ce361602b935680e8dec218b820ff5056beb7af"
+        fee_token: true
+        interop: false
+      exp2:
+        address: "0xe1aa25618fa0c7a1cfdab5d6b456af611873b629"
+        fee_token: true
+        interop: false
     endpoint: http://anvil:8545
 quote:
   constantRate: 1.0
@@ -28,12 +36,12 @@ transactions:
   transaction_timeout: 60
   public_node_endpoints: {}
   priority_fee_percentile: 20.0
-orchestrator:
+orchestrator: "0x700b6a60ce7eaaea56f065753d8dcb9653dbad35"
 legacy_orchestrators: []
 legacy_delegation_proxies: []
-delegation_proxy:
-simulator:
-funder:
-escrow:
+delegation_proxy: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431"
+simulator: "0x82dc47734901ee7d4f4232f398752cb9dd5daccc"
+funder: "0x196dbcbb54b8ec4958c959d8949ebfe87ac2aaaf"
+escrow: "0x2a264f26859166c5bf3868a54593ee716aebc848"
 fee_recipient: '0x0000000000000000000000000000000000000000'
 database_url: null

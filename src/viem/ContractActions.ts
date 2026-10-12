@@ -29,7 +29,7 @@ import {
   encodeExecuteData,
   getExecuteError as getExecuteError_viem,
 } from 'viem/experimental/erc7821'
-import * as IthacaAccount from '../core/internal/_generated/contracts/IthacaAccount.js'
+import * as AccountContract from '../core/internal/_generated/contracts/Account.js'
 import * as Call from '../core/internal/call.js'
 import type { OneOf } from '../core/internal/types.js'
 import type * as Storage from '../core/Storage.js'
@@ -40,7 +40,7 @@ import * as Key from './Key.js'
 export {
   abi,
   code,
-} from '../core/internal/_generated/contracts/IthacaAccount.js'
+} from '../core/internal/_generated/contracts/Account.js'
 
 /**
  * Executes a set of calls on a delegated account.
@@ -252,7 +252,7 @@ export async function keyAt<
   if (!account_) throw new Error('account is required.')
 
   const key = await readContract(client, {
-    abi: IthacaAccount.abi,
+    abi: AccountContract.abi,
     address: account_.address,
     args: [BigInt(index)],
     functionName: 'keyAt',
@@ -422,7 +422,7 @@ export function parseExecutionError<const calls extends readonly unknown[]>(
     try {
       if (data === '0xd0d5039b') return AbiError.from('error Unauthorized()')
       return AbiError.fromAbi(
-        [...IthacaAccount.abi, AbiError.from('error CallError()')],
+        [...AccountContract.abi, AbiError.from('error CallError()')],
         data,
       )
     } catch {

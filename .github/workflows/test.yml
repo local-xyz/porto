@@ -7,10 +7,6 @@ on:
         type: string
         description: 'Porto ref'
         default: ''
-      contracts-ref:
-        type: string
-        description: 'Contracts ref'
-        default: ''
       relay-ref:
         type: string
         description: 'Relay ref'
@@ -121,13 +117,6 @@ jobs:
           # Configure submodules to fetch all refs
           git submodule foreach 'git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"'
           git submodule foreach 'git fetch --tags'
-
-      - name: Checkout contracts submodule at specific ref
-        if: matrix.enabled == true && inputs.contracts-ref != ''
-        run: |
-          cd contracts/account
-          git fetch origin ${{ inputs.contracts-ref }}
-          git checkout ${{ inputs.contracts-ref }}
 
       - name: Install dependencies
         if: matrix.enabled == true

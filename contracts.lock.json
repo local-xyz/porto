@@ -1,0 +1,9 @@
+{
+  "asset": "contracts-v0.1.0.tar.gz",
+  "commit": "24ca301283f25472ae4ecf731136ce8f197afb0a",
+  "repository": "local-xyz/contracts",
+  "schema": 1,
+  "sha256": "bfab2c9692c62a31d6b7169525a54b7ab6c0d54559fcc398685f2036596788b1",
+  "tag": "contracts-v0.1.0",
+  "version": "0.1.0"
+}

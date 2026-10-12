@@ -2,7 +2,7 @@ import * as AbiFunction from 'ox/AbiFunction'
 import type * as Address from 'ox/Address'
 import type * as Hex from 'ox/Hex'
 import * as Key from '../../viem/Key.js'
-import * as IthacaAccount from './_generated/contracts/IthacaAccount.js'
+import * as Account from './_generated/contracts/Account.js'
 
 /** Stub address for self-execution. */
 export const selfAddress = '0x2323232323232323232323232323232323232323'
@@ -23,7 +23,7 @@ export function authorize(parameters: authorize.Parameters) {
   const { key } = parameters
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'authorize'),
+      AbiFunction.fromAbi(Account.abi, 'authorize'),
       [Key.serialize(key)],
     ),
     to: selfAddress,
@@ -59,7 +59,7 @@ export function setCanExecute(parameters: setCanExecute.Parameters = {}) {
 
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'setCanExecute'),
+      AbiFunction.fromAbi(Account.abi, 'setCanExecute'),
       [hash, to, selector, enabled],
     ),
     to: selfAddress,
@@ -88,10 +88,9 @@ export declare namespace setCanExecute {
 export function setLabel(parameters: setLabel.Parameters) {
   const { label } = parameters
   return {
-    data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'setLabel'),
-      [label],
-    ),
+    data: AbiFunction.encodeData(AbiFunction.fromAbi(Account.abi, 'setLabel'), [
+      label,
+    ]),
     to: selfAddress,
   } as const satisfies Call
 }
@@ -114,7 +113,7 @@ export function setSpendLimit(parameters: setSpendLimit.Parameters) {
   const token = parameters.token ?? '0x0000000000000000000000000000000000000000'
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'setSpendLimit'),
+      AbiFunction.fromAbi(Account.abi, 'setSpendLimit'),
       [key.hash, token, Key.toSerializedSpendPeriod[period], limit],
     ),
     to: selfAddress,
@@ -146,7 +145,7 @@ export function setSignatureCheckerApproval(
   const { address, key, enabled } = parameters
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'setSignatureCheckerApproval'),
+      AbiFunction.fromAbi(Account.abi, 'setSignatureCheckerApproval'),
       [key.hash, address, enabled],
     ),
     to: selfAddress,
@@ -174,7 +173,7 @@ export function removeSpendLimit(parameters: removeSpendLimit.Parameters) {
   const { key, token, period } = parameters
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'removeSpendLimit'),
+      AbiFunction.fromAbi(Account.abi, 'removeSpendLimit'),
       [key.hash, token, Key.toSerializedSpendPeriod[period]],
     ),
     to: selfAddress,
@@ -201,10 +200,9 @@ export declare namespace removeSpendLimit {
 export function revoke(parameters: revoke.Parameters) {
   const { keyHash } = parameters
   return {
-    data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'revoke'),
-      [keyHash],
-    ),
+    data: AbiFunction.encodeData(AbiFunction.fromAbi(Account.abi, 'revoke'), [
+      keyHash,
+    ]),
     to: selfAddress,
   } as const satisfies Call
 }
@@ -228,7 +226,7 @@ export function upgradeProxyAccount(
   const { address, to = selfAddress } = parameters
   return {
     data: AbiFunction.encodeData(
-      AbiFunction.fromAbi(IthacaAccount.abi, 'upgradeProxyAccount'),
+      AbiFunction.fromAbi(Account.abi, 'upgradeProxyAccount'),
       [address],
     ),
     to,

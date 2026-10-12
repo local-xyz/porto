@@ -12,11 +12,11 @@ import {
 import { type Address, Value } from 'ox'
 
 import * as Anvil from '../test/src/anvil.js'
+import * as Account from '../src/core/internal/_generated/contracts/Account.js'
+import * as AccountNew from '../src/core/internal/_generated/contracts/AccountNew.js'
+import * as AccountOld from '../src/core/internal/_generated/contracts/AccountOld.js'
 import * as EIP7702Proxy from '../src/core/internal/_generated/contracts/EIP7702Proxy.js'
 import * as Escrow from '../src/core/internal/_generated/contracts/Escrow.js'
-import * as IthacaAccount from '../src/core/internal/_generated/contracts/IthacaAccount.js'
-import * as IthacaAccountOld from '../src/core/internal/_generated/contracts/IthacaAccountOld.js'
-import * as IthacaAccountNew from '../src/core/internal/_generated/contracts/IthacaAccountNew.js'
 import * as Orchestrator from '../src/core/internal/_generated/contracts/Orchestrator.js'
 import * as ExperimentERC20 from '../src/core/internal/_generated/contracts/ExperimentERC20.js'
 import * as ExperimentERC721 from '../src/core/internal/_generated/contracts/ExperimentERC721.js'
@@ -59,11 +59,11 @@ let orchestratorAddress: Address.Address | null | undefined
 }
 
 {
-  // Deploy IthacaAccount contract.
+  // Deploy Account contract.
   const hash = await deployContract(client, {
-    abi: IthacaAccount.abi,
+    abi: Account.abi,
     args: [orchestratorAddress!],
-    bytecode: IthacaAccount.code,
+    bytecode: Account.code,
     chain: null,
   })
   const { contractAddress } = await waitForTransactionReceipt(client, {
@@ -105,11 +105,11 @@ for (const i of Array.from({ length: 2 }, (_, i) => i + 1)) {
 }
 
 {
-  // Deploy IthacaAccountOld contract.
+  // Deploy AccountOld contract.
   const hash = await deployContract(client, {
-    abi: IthacaAccountOld.abi,
+    abi: AccountOld.abi,
     args: [orchestratorAddress!],
-    bytecode: IthacaAccountOld.code,
+    bytecode: AccountOld.code,
     chain: null,
   })
   const { contractAddress } = await waitForTransactionReceipt(client, {
@@ -131,11 +131,11 @@ for (const i of Array.from({ length: 2 }, (_, i) => i + 1)) {
 }
 
 {
-  // Deploy IthacaAccountNew contract.
+  // Deploy AccountNew contract.
   const hash = await deployContract(client, {
-    abi: IthacaAccountNew.abi,
+    abi: AccountNew.abi,
     args: [orchestratorAddress!],
-    bytecode: IthacaAccountNew.code,
+    bytecode: AccountNew.code,
     chain: null,
   })
   const { contractAddress } = await waitForTransactionReceipt(client, {
