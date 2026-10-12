@@ -139,10 +139,10 @@ export default defineConfig(({ mode }) => {
               simulator: simulatorAddress,
               txGasBuffer: 100_000n,
             }).start()
-            await fetch(relayConfig.rpcUrl + '/start')
             return stop
           }
           let stopRelay = await startRelay()
+          server.httpServer?.once('close', () => void stopRelay())
 
           logger.info('Relay started on ' + relayConfig.rpcUrl)
 
