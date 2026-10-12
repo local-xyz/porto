@@ -5,6 +5,7 @@ import { setTimeout } from 'node:timers/promises'
 import { defineInstance, toArgs } from 'prool'
 import { execa } from 'prool/processes'
 import YAML from 'yaml'
+import { relayEnvironment } from './relay-environment.js'
 
 type RelayLock = {
   digest: `sha256:${string}`
@@ -16,6 +17,7 @@ const relayLock = JSON.parse(
 ) as RelayLock
 
 type RelayParameters = {
+  environment?: Record<string, string | undefined> | undefined
   config?: string | undefined
   containerName?: string | undefined
   constantRate?: number | undefined
@@ -56,6 +58,7 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
   const {
     containerName = crypto.randomUUID(),
     endpoint,
+    environment = {},
     feeTokens,
     image = relayLock.image,
     interopToken,
@@ -63,6 +66,8 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
     version = process.env.VITE_RELAY_VERSION,
     ...rest
   } = args
+
+  const containerEnvironment = relayEnvironment(environment)
 
   const host = 'localhost'
   const name = 'relay'
@@ -132,6 +137,7 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
         `${port}:${port}`,
         '-v',
         `${configPath}:/app/relay.yaml`,
+        ...containerEnvironment.args,
         imageReference,
         ...toArgs({
           ...rest,
@@ -148,24 +154,27 @@ export const relay = defineInstance((parameters?: RelayParameters) => {
       ]
 
       const debug = process.env.VITE_RPC_DEBUG === 'true'
-      return await process_.start(($) => $`docker run ${args_}`, {
-        ...options,
-        resolver({ process, resolve, reject }) {
-          // TODO: remove once relay has feedback on startup.
-          setTimeout(3_000).then(resolve)
-          process.stdout.on('data', (data) => {
-            const message = data.toString()
-            if (debug) console.log(message)
-            if (message.includes('Started relay service')) resolve()
-          })
-          process.stderr.on('data', async (data) => {
-            const message = data.toString()
-            if (debug) console.log(message)
-            if (message.includes('WARNING')) return
-            reject(data)
-          })
+      return await process_.start(
+        ($) => $({ env: containerEnvironment.env })`docker run ${args_}`,
+        {
+          ...options,
+          resolver({ process, resolve, reject }) {
+            // TODO: remove once relay has feedback on startup.
+            setTimeout(3_000).then(resolve)
+            process.stdout.on('data', (data) => {
+              const message = data.toString()
+              if (debug) console.log(message)
+              if (message.includes('Started relay service')) resolve()
+            })
+            process.stderr.on('data', async (data) => {
+              const message = data.toString()
+              if (debug) console.log(message)
+              if (message.includes('WARNING')) return
+              reject(data)
+            })
+          },
         },
-      })
+      )
     },
     async stop() {
       return stop()

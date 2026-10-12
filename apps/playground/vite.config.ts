@@ -122,6 +122,12 @@ export default defineConfig(({ mode }) => {
               containerName: 'playground',
               delegationProxy: accountProxy,
               endpoint: anvilConfig.rpcUrl,
+              environment: {
+                EMAIL_SENDER: env.EMAIL_SENDER,
+                ONRAMP_WORKER_SECRET: env.ONRAMP_WORKER_SECRET,
+                PORTO_BASE_URL: env.PORTO_BASE_URL,
+                RESEND_API_KEY: env.RESEND_API_KEY,
+              },
               escrow: escrowAddress,
               feeTokens: [
                 '0x0000000000000000000000000000000000000000',
