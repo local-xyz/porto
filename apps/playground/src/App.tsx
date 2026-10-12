@@ -922,7 +922,9 @@ function SwitchChain(props: { showTitle?: boolean }) {
     }
     porto.provider.request({ method: 'eth_chainId' }).then(onChainChanged)
     porto.provider.on('chainChanged', onChainChanged)
-    return () => porto.provider.removeListener('chainChanged', onChainChanged)
+    return () => {
+      porto.provider.removeListener('chainChanged', onChainChanged)
+    }
   }, [])
 
   return (

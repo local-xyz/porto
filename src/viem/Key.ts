@@ -1271,6 +1271,12 @@ export function serializeWebAuthnSignature(
   options: serializeWebAuthnSignature.Options,
 ) {
   const { metadata, signature } = options
+  const { challengeIndex, typeIndex } = metadata
+  if (challengeIndex === undefined || typeIndex === undefined)
+    throw new TypeError(
+      'WebAuthn signature metadata must include challengeIndex and typeIndex.',
+    )
+
   return AbiParameters.encode(
     AbiParameters.from([
       'struct WebAuthnAuth { bytes authenticatorData; string clientDataJSON; uint256 challengeIndex; uint256 typeIndex; bytes32 r; bytes32 s; }',
@@ -1279,11 +1285,11 @@ export function serializeWebAuthnSignature(
     [
       {
         authenticatorData: metadata.authenticatorData,
-        challengeIndex: BigInt(metadata.challengeIndex),
+        challengeIndex: BigInt(challengeIndex),
         clientDataJSON: metadata.clientDataJSON,
         r: Hex.fromNumber(signature.r, { size: 32 }),
         s: Hex.fromNumber(signature.s, { size: 32 }),
-        typeIndex: BigInt(metadata.typeIndex),
+        typeIndex: BigInt(typeIndex),
       },
     ],
   )

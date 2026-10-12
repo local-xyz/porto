@@ -2,7 +2,11 @@ import { setTimeout } from 'node:timers/promises'
 import { type Address, Secp256k1 } from 'ox'
 import { parseEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { waitForCallsStatus, writeContract } from 'viem/actions'
+import {
+  waitForCallsStatus,
+  waitForTransactionReceipt,
+  writeContract,
+} from 'viem/actions'
 import * as Account from '../../src/viem/Account.js'
 import type * as Key from '../../src/viem/Key.js'
 import * as RelayActions from '../../src/viem/RelayActions.js'
@@ -98,7 +102,7 @@ async function addFaucetFunds_anvil(
 ) {
   const { address, value } = parameters
 
-  await writeContract(client, {
+  const hash = await writeContract(client, {
     abi: Contracts.exp1Abi,
     account: privateKeyToAccount(Anvil.accounts[0]!.privateKey),
     address: Contracts.exp1Address[client.chain.id as never],
@@ -106,4 +110,5 @@ async function addFaucetFunds_anvil(
     chain: null,
     functionName: 'mint',
   })
+  await waitForTransactionReceipt(client, { hash })
 }

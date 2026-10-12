@@ -67,6 +67,7 @@ describe('fromPorto', () => {
               },
             },
           },
+          "extend": [Function],
           "fees": undefined,
           "formatters": {
             "block": {
@@ -104,11 +105,13 @@ describe('fromPorto', () => {
           },
           "sourceId": 1,
         },
+        "dataSuffix": undefined,
         "extend": [Function],
         "key": "base",
         "name": "Base Client",
         "pollingInterval": 1000,
         "request": [Function],
+        "tokens": undefined,
         "transport": {
           "key": "relayProxy",
           "methods": undefined,

@@ -2,6 +2,7 @@ import { http, createClient } from 'viem'
 import { getCapabilities } from 'viem/actions'
 import { readFile, writeFile } from 'node:fs/promises'
 import * as Chains from 'viem/chains'
+import { selectChainEnvironments } from './chains-environment.js'
 
 // TODO: Update wagmi.config.ts
 console.log('Fetching chains for environments.')
@@ -9,7 +10,7 @@ console.log('Fetching chains for environments.')
 const environments = [
   {
     name: 'prod',
-    rpc: 'https://rpc.porto.sh',
+    rpc: 'https://relay.localprotocol.xyz',
     transportOverrides: {
       arbitrum: 'import.meta.env.VITE_RPC_URL_ARBITRUM',
       base: 'import.meta.env.VITE_RPC_URL_BASE',
@@ -18,38 +19,61 @@ const environments = [
       polygon: 'import.meta.env.VITE_RPC_URL_POLYGON',
     },
   },
-  { name: 'stg', rpc: 'https://stg-rpc.porto.sh', transportOverrides: {} },
+  {
+    chains: ['baseSepolia'],
+    name: 'stg',
+    rpc: 'https://relay-staging.localprotocol.xyz',
+    transportOverrides: {},
+  },
 ] as const satisfies readonly {
+  chains?: readonly (keyof typeof Chains)[]
   name: 'prod' | 'stg'
   rpc: string
   transportOverrides: Partial<Record<keyof typeof Chains, string>>
 }[]
 
+const selectedEnvironmentNames = selectChainEnvironments({
+  args: process.argv.slice(2),
+  ...(process.env.PORTO_CHAINS_ENV
+    ? { environment: process.env.PORTO_CHAINS_ENV }
+    : {}),
+})
+const selectedEnvironments = environments.filter((environment) =>
+  selectedEnvironmentNames.includes(environment.name),
+)
+
+console.log(`Selected: ${selectedEnvironmentNames.join(', ')}`)
+
 const configPath = './apps/~internal/lib/PortoConfig.ts'
 const chainsSet = new Set<string>([])
-for (const environment of environments) {
+for (const environment of environments)
+  if ('chains' in environment)
+    for (const chain of environment.chains) chainsSet.add(chain)
+
+for (const environment of selectedEnvironments) {
   console.log(`\n${environment.name} — ${environment.rpc}`)
 
-  const client = createClient({
-    transport: http(environment.rpc),
-  })
-
-  const capabilities = await getCapabilities(client)
-  const supportedChainIds = Object.keys(capabilities).map(Number)
-
-  const allChains = Object.entries(Chains)
   let supportedChains: string[] = []
-  for (const chainId of supportedChainIds) {
-    const entry = allChains.find(([, chain]) => chain.id === chainId)
-    if (!entry) {
-      console.warn(`No chain found for id ${chainId}. Please add it to Viem.`)
-      continue
+  if ('chains' in environment) supportedChains = [...environment.chains]
+  else {
+    const client = createClient({
+      transport: http(environment.rpc),
+    })
+
+    const capabilities = await getCapabilities(client)
+    const supportedChainIds = Object.keys(capabilities).map(Number)
+    const allChains = Object.entries(Chains)
+    for (const chainId of supportedChainIds) {
+      const entry = allChains.find(([, chain]) => chain.id === chainId)
+      if (!entry) {
+        console.warn(`No chain found for id ${chainId}. Please add it to Viem.`)
+        continue
+      }
+      supportedChains.push(entry[0])
     }
-    const slug = entry[0]
-    supportedChains.push(slug)
-    chainsSet.add(slug)
   }
   supportedChains = supportedChains.toSorted()
+  for (const chain of supportedChains) chainsSet.add(chain)
 
   console.log(
     `Found ${supportedChains.length} chains\n${supportedChains.map((v, i) => `${i + 1}. ${v}`).join('\n')}`,
@@ -84,13 +108,15 @@ for (const environment of environments) {
   }
 }
 
-console.log(`\nUpdating imports ${configPath}`)
-const file = await readFile(configPath, 'utf8')
-const content = replaceChainsForViemChainsImport(
-  file,
-  [...chainsSet.values()].toSorted(),
-)
-await writeFile(configPath, content)
+if (selectedEnvironmentNames.includes('prod')) {
+  console.log(`\nUpdating imports ${configPath}`)
+  const file = await readFile(configPath, 'utf8')
+  const content = replaceChainsForViemChainsImport(
+    file,
+    [...chainsSet.values()].toSorted(),
+  )
+  await writeFile(configPath, content)
+} else console.log(`\nPreserving production imports in ${configPath}`)
 
 console.log('\nDone.')
 

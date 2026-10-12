@@ -13,11 +13,13 @@ describe('fromPorto', () => {
         "cacheTime": 1000,
         "ccipRead": undefined,
         "chain": undefined,
+        "dataSuffix": undefined,
         "extend": [Function],
         "key": "base",
         "name": "Base Client",
         "pollingInterval": 1000,
         "request": [Function],
+        "tokens": undefined,
         "transport": {
           "key": "custom",
           "methods": undefined,

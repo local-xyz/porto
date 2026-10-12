@@ -21,10 +21,12 @@ import * as Store from './store.js'
 import * as UrlString from './urlString.js'
 import { uuidv4, withDedupe } from './utils.js'
 
-export type Provider = ox_Provider.Provider<{
-  includeEvents: true
-  schema: RpcSchema.Schema
-}> & {
+export type Provider = ox_Provider.Provider<
+  {
+    schema: RpcSchema.Schema
+  },
+  true
+> & {
   /**
    * Not part of versioned API, proceed with caution.
    * @deprecated
@@ -82,7 +84,7 @@ export function from<
   const lock = new Map<string, boolean>()
   const preparedAccounts_internal: Account.Account[] = []
 
-  const emitter = ox_Provider.createEmitter()
+  const emitter = ox_Provider.createEmitter<{}>()
   const provider = ox_Provider.from({
     ...emitter,
     async request(request_) {
