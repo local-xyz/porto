@@ -21,7 +21,7 @@ cli
     },
   )
   .option('-d, --dialog <hostname>', 'Dialog hostname', {
-    default: 'id.porto.sh',
+    default: 'id.localprotocol.xyz',
   })
   .option('-t, --testnet', 'Onboard via testnet', {
     default: false,

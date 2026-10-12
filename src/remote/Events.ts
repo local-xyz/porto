@@ -7,7 +7,12 @@ import type { Payload } from '../core/Messenger.js'
 import * as Actions from './Actions.js'
 import type * as Remote from './Porto.js'
 
-const trustedOrigins = ['id.porto.sh', 'localhost:5174', 'localhost:5173']
+const trustedOrigins = [
+  'id.localprotocol.xyz',
+  'id-staging.localprotocol.xyz',
+  'localhost:5174',
+  'localhost:5173',
+]
 
 /**
  * Event listener which is triggered when a request is ready

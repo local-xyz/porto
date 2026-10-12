@@ -25,8 +25,8 @@ type AuthSessionStatus =
 
 export const hostUrls = {
   local: 'http://localhost:5175/dialog/',
-  prod: 'https://id.porto.sh/dialog',
-  stg: 'https://stg.id.porto.sh/dialog',
+  prod: 'https://id.localprotocol.xyz/dialog/',
+  stg: 'https://id-staging.localprotocol.xyz/dialog/',
 } as const
 
 /** Dialog interface. */
