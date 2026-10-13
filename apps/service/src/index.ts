@@ -14,7 +14,9 @@ import { snapshotApp } from '#routes/snapshot.tsx'
 import { verifyApp } from '#routes/verify.ts'
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>()
-app.use(cors())
+app.use('*', (c, next) =>
+  c.req.path.startsWith('/onramp') ? next() : cors()(c, next),
+)
 app.use(csrf())
 app.use(logger())
 app.use(prettyJSON())

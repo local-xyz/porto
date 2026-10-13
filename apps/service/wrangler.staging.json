@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "c814b33642103450ac87d05183f14a1d",
+  "compatibility_date": "2025-09-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./src/onramp.ts",
+  "name": "localxyz-onramp-staging",
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  "preview_urls": false,
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "namespace_id": "1002",
+        "simple": {
+          "limit": 10,
+          "period": 60
+        },
+        "type": "ratelimit"
+      }
+    ]
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "ONRAMP_ALLOWED_ORIGINS": "https://id-staging.localprotocol.xyz",
+    "ONRAMP_CHAIN_ID": "84532",
+    "ONRAMP_DESTINATION_NETWORK": "base",
+    "ONRAMP_ENABLED": "false",
+    "ONRAMP_RELAY_URL": "https://relay-staging.localprotocol.xyz",
+    "ONRAMP_SANDBOX": "true"
+  },
+  "workers_dev": false
+}
