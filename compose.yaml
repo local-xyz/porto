@@ -35,7 +35,7 @@ services:
     build:
       context: "${DOCKER_BUILD_CONTEXT:-.}"
       dockerfile_inline: |
-        FROM ghcr.io/local-xyz/grid-relay@sha256:1b4f9507c18d9393af7b80a29f22496816c4139bd03f31340dcc032bc70a1785
+        FROM ghcr.io/local-xyz/grid-relay@sha256:21ed30ce2d06511e1ecc3f657f967f1b069aa3b06496654e204109041838b34d
         COPY --from=ghcr.io/foundry-rs/foundry:latest /usr/local/bin/cast /usr/local/bin/cast
     platform: linux/x86_64
     labels:
