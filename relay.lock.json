@@ -1,8 +1,7 @@
 {
   "commit": "029d350163e18735f0d18dc09ea46cbc19d5cfc6",
   "contracts": {
-    "commit": "c37349a8632d2f3498308217ff9f8d7bf7172e4f",
-    "sha256": "4f7aa784a4ce09832bdc7e47c10945a8e0e81494822b0e27e4f806eab9bdb64f"
+    "commit": "c37349a8632d2f3498308217ff9f8d7bf7172e4f"
   },
   "digest": "sha256:1b4f9507c18d9393af7b80a29f22496816c4139bd03f31340dcc032bc70a1785",
   "image": "ghcr.io/local-xyz/grid-relay",

@@ -54,13 +54,16 @@ pnpm test # Test
 ### Contracts
 
 ```bash
-# Fetch the pinned LocalXYZ contract release.
-pnpm contracts:fetch
-
-# Generate TypeScript bindings and the local Anvil state.
+# Build the pinned LocalXYZ contracts commit with Foundry and regenerate the
+# TypeScript bindings (the pin lives in scripts/contracts.ts).
 pnpm build:contracts
+
+# Rebuild the local Anvil state from the generated bindings.
 pnpm build:anvil-state
 ```
+
+Set `CONTRACTS_PATH` to a clean local checkout of `local-xyz/contracts` at the
+pinned commit to build from it instead of fetching.
 
 ## License
 

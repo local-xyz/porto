@@ -1,14 +1,10 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, test } from 'vitest'
-
-type ContractsLock = {
-  commit: string
-  sha256: string
-}
+import { commit as contractsCommit } from '../scripts/contracts.js'
 
 type RelayLock = {
   commit: string
-  contracts: ContractsLock
+  contracts: { commit: string }
   digest: string
   image: string
   repository: string
@@ -22,20 +18,12 @@ async function readJson<T>(name: string) {
 }
 
 describe('provider-independent release locks', () => {
-  test('pins a valid Grid Relay artifact and matching contracts release', async () => {
-    const [contracts, relay] = await Promise.all([
-      readJson<ContractsLock>('contracts.lock.json'),
-      readJson<RelayLock>('relay.lock.json'),
-    ])
+  test('pins a valid Grid Relay artifact and matching contracts commit', async () => {
+    const relay = await readJson<RelayLock>('relay.lock.json')
 
-    expect(relay.contracts).toEqual({
-      commit: contracts.commit,
-      sha256: contracts.sha256,
-    })
-    expect(contracts.commit).toBe('c37349a8632d2f3498308217ff9f8d7bf7172e4f')
-    expect(contracts.sha256).toBe(
-      '4f7aa784a4ce09832bdc7e47c10945a8e0e81494822b0e27e4f806eab9bdb64f',
-    )
+    expect(contractsCommit).toBe('c37349a8632d2f3498308217ff9f8d7bf7172e4f')
+    expect(contractsCommit).toMatch(/^[0-9a-f]{40}$/)
+    expect(relay.contracts).toEqual({ commit: contractsCommit })
 
     expect(relay.image).toBe('ghcr.io/local-xyz/grid-relay')
     expect(relay.repository).toBe('local-xyz/grid')

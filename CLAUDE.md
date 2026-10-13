@@ -63,8 +63,7 @@ pnpm dev:wagmi                 # Run `pnpm dev` with wagmi playground
 ### Testing
 
 ```bash
-pnpm contracts:fetch           # Fetch the pinned LocalXYZ contract release
-pnpm build:contracts           # Generate contract bindings
+pnpm build:contracts           # Build the pinned LocalXYZ contracts commit and generate bindings
 pnpm build:anvil-state         # Build Anvil State (optional)
 pnpm test                      # Run default test suite with Vitest
 pnpm test:browser              # Run browser-based tests (Chromium, Firefox)
@@ -84,8 +83,7 @@ pnpm check:knip               # Check for unused dependencies with knip
 ### Contract Development
 
 ```bash
-# Contract artifacts
-pnpm contracts:fetch
+# Contract artifacts (pin: scripts/contracts.ts; override with CONTRACTS_PATH)
 pnpm build:contracts
 pnpm build:anvil-state
 ```
@@ -93,7 +91,7 @@ pnpm build:anvil-state
 ## Directory Structure
 
 - `apps/`: Applications
-- `contracts.lock.json`: Pinned production and test contract artifacts
+- `scripts/contracts.ts`: Pinned `local-xyz/contracts` commit used to generate contract bindings
 - `relay.lock.json`: Pinned LocalXYZ Grid relay image and contract compatibility data
 - `src/`: `porto` library source
   - Files are represented as modules
@@ -149,10 +147,9 @@ pnpm build:anvil-state
 - **`wagmi/`** - Wagmi development playground
 - **`verify/`** - Application verification worker
 
-### Contracts (`contracts/`)
+### Contracts
 
-- **`contracts.lock.json`** - Pinned LocalXYZ account artifacts
-- **`demo/`** - Demo and example contracts
+- **`scripts/contracts.ts`** - Pinned `local-xyz/contracts` commit; `pnpm build:contracts` shallow-fetches it into a temp cache, runs `forge build`, and regenerates `src/core/internal/_generated/contracts`
 
 ## Development Workflow
 

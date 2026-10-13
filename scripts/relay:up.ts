@@ -1,11 +1,7 @@
 import * as ChildProcess from 'node:child_process'
 import * as Fs from 'node:fs'
 import * as Path from 'node:path'
-
-type ContractsLock = {
-  commit: string
-  sha256: string
-}
+import { commit as contractsCommit } from './contracts.js'
 
 type ImageManifest = {
   digest?: string
@@ -45,27 +41,25 @@ const digest = manifest.digest ?? manifest.Digest
 if (!digest?.startsWith('sha256:'))
   throw new Error(`Could not resolve the digest for ${reference}`)
 
-const gridContracts = JSON.parse(
-  Buffer.from(
-    run('gh', [
-      'api',
-      `repos/${repository}/contents/contracts.lock.json?ref=${commit}`,
-      '--jq',
-      '.content',
-    ]).replaceAll('\n', ''),
-    'base64',
-  ).toString('utf8'),
-) as ContractsLock
-const portoContracts = JSON.parse(
-  Fs.readFileSync(Path.resolve(root, 'contracts.lock.json'), 'utf8'),
-) as ContractsLock
+// Grid pins local-xyz/contracts in its xtask; its committed bindings are generated from that commit.
+const gridContractsSource = Buffer.from(
+  run('gh', [
+    'api',
+    `repos/${repository}/contents/crates/relay/tools/xtask/src/contracts.rs?ref=${commit}`,
+    '--jq',
+    '.content',
+  ]).replaceAll('\n', ''),
+  'base64',
+).toString('utf8')
+const gridContractsCommit = gridContractsSource.match(
+  /pub const COMMIT: &str = "([0-9a-f]{40})";/,
+)?.[1]
+if (!gridContractsCommit)
+  throw new Error('Could not read the contracts pin from Grid.')
 
-if (
-  gridContracts.commit !== portoContracts.commit ||
-  gridContracts.sha256 !== portoContracts.sha256
-)
+if (gridContractsCommit !== contractsCommit)
   throw new Error(
-    'Grid and Porto must pin the same contract release before updating Relay.',
+    `Grid pins local-xyz/contracts@${gridContractsCommit} but Porto pins ${contractsCommit}. Align scripts/contracts.ts before updating Relay.`,
   )
 
 Fs.writeFileSync(
@@ -74,8 +68,7 @@ Fs.writeFileSync(
     {
       commit,
       contracts: {
-        commit: gridContracts.commit,
-        sha256: gridContracts.sha256,
+        commit: gridContractsCommit,
       },
       digest,
       image,

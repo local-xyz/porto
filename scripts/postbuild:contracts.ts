@@ -1,11 +1,7 @@
 import * as Fs from 'node:fs/promises'
 import * as Path from 'node:path'
 
-import {
-  type ContractArtifact,
-  fetchContracts,
-  readArtifact,
-} from './contracts.js'
+import { buildContracts, readArtifact } from './contracts.js'
 
 await Fs.rm(
   Path.resolve(
@@ -24,11 +20,33 @@ await Fs.mkdir(
   },
 )
 
-async function writeContract(name: string, artifact: ContractArtifact) {
+// Foundry contract name -> generated module name.
+const contracts = {
+  Account: 'IthacaAccount',
+  AccountNew: 'IthacaAccountNew',
+  AccountOld: 'IthacaAccountOld',
+  EIP7702Proxy: 'EIP7702Proxy',
+  Escrow: 'Escrow',
+  ExperimentERC20: 'ExperimentERC20',
+  ExperimentERC721: 'ExperimentERC721',
+  LayerZeroSettler: 'LayerZeroSettler',
+  MultiSigSigner: 'MultiSigSigner',
+  Orchestrator: 'Orchestrator',
+  SimpleFunder: 'SimpleFunder',
+  SimpleSettler: 'SimpleSettler',
+  Simulator: 'Simulator',
+} as const
+
+// Build the contracts pinned by `scripts/contracts.ts`.
+const checkout = buildContracts()
+
+for (const [contract, name] of Object.entries(contracts)) {
+  const { abi, bytecode } = readArtifact(checkout, contract)
+
   let code = ''
-  code += `export const abi = ${JSON.stringify(artifact.abi, null, 2)} as const;\n\n`
+  code += `export const abi = ${JSON.stringify(abi, null, 2)} as const;\n\n`
   code += `export const code = ${JSON.stringify(
-    artifact.bytecode.object,
+    bytecode.object,
     null,
     2,
   )} as const;\n`
@@ -40,24 +58,3 @@ async function writeContract(name: string, artifact: ContractArtifact) {
 
   await Fs.writeFile(out, code)
 }
-
-// Generate the production contracts from the release pinned by contracts.lock.json.
-const contracts = await fetchContracts()
-const releaseContracts = {
-  account: 'IthacaAccount',
-  account_new: 'IthacaAccountNew',
-  account_old: 'IthacaAccountOld',
-  account_proxy: 'EIP7702Proxy',
-  escrow: 'Escrow',
-  experiment_erc20: 'ExperimentERC20',
-  experiment_erc721: 'ExperimentERC721',
-  layerzero_settler: 'LayerZeroSettler',
-  multi_sig_signer: 'MultiSigSigner',
-  orchestrator: 'Orchestrator',
-  simple_funder: 'SimpleFunder',
-  simple_settler: 'SimpleSettler',
-  simulator: 'Simulator',
-} as const
-
-for (const [artifact, name] of Object.entries(releaseContracts))
-  await writeContract(name, await readArtifact(contracts, artifact))
