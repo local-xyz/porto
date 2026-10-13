@@ -128,7 +128,7 @@ export declare namespace setSpendLimit {
     /** Limit to set. */
     limit: bigint
     /** Period to set. */
-    period: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'
+    period: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year' | 'forever'
     /** Token to set. */
     token?: Address.Address | undefined
   }
@@ -186,7 +186,7 @@ export declare namespace removeSpendLimit {
     /** Key to set the spend limit of. */
     key: Key.Key
     /** Period to set. */
-    period: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'
+    period: 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year' | 'forever'
     /** Token to set. */
     token: Address.Address
   }

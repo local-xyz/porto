@@ -22,6 +22,7 @@ export const SpendPermission = z.object({
     z.literal('week'),
     z.literal('month'),
     z.literal('year'),
+    z.literal('forever'),
   ]),
   /** The token this permission applies to. If `None`, defaults to native token (ETH). */
   token: z.optional(z.union([u.address(), z.null()])),

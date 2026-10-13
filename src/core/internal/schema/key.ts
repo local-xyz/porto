@@ -76,6 +76,7 @@ export const SpendPermissions = z.readonly(
         z.literal('week'),
         z.literal('month'),
         z.literal('year'),
+        z.literal('forever'),
       ]),
       token: z.optional(u.address()),
     }),

@@ -197,6 +197,7 @@ describe('SpendPermission', () => {
     { period: 'week' },
     { period: 'month' },
     { period: 'year' },
+    { period: 'forever' },
   ])(
     'behavior: parses valid spend permission with period $period',
     ({ period }) => {
@@ -310,7 +311,8 @@ describe('SpendPermission', () => {
         - Expected "day"
         - Expected "week"
         - Expected "month"
-        - Expected "year"]
+        - Expected "year"
+        - Expected "forever"]
     `,
     )
   })
@@ -369,7 +371,8 @@ describe('SpendPermission', () => {
         - Expected "day"
         - Expected "week"
         - Expected "month"
-        - Expected "year"]
+        - Expected "year"
+        - Expected "forever"]
     `,
     )
   })
@@ -468,6 +471,7 @@ describe('Permission', () => {
           - Expected "week"
           - Expected "month"
           - Expected "year"
+          - Expected "forever"
         - at \`type\`: Expected "spend"]
     `,
     )
@@ -492,6 +496,7 @@ describe('Permission', () => {
           - Expected "week"
           - Expected "month"
           - Expected "year"
+          - Expected "forever"
         - at \`type\`: Expected "spend"]
     `,
     )

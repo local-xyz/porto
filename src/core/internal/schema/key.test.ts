@@ -325,7 +325,15 @@ describe('SpendPermissions', () => {
   })
 
   test('behavior: accepts all period types', () => {
-    const periods = ['minute', 'hour', 'day', 'week', 'month', 'year']
+    const periods = [
+      'minute',
+      'hour',
+      'day',
+      'week',
+      'month',
+      'year',
+      'forever',
+    ]
     for (const period of periods) {
       const result = z.parse(Key.SpendPermissions, [
         {
@@ -362,7 +370,8 @@ describe('SpendPermissions', () => {
         - Expected "day"
         - Expected "week"
         - Expected "month"
-        - Expected "year"]
+        - Expected "year"
+        - Expected "forever"]
     `,
     )
   })

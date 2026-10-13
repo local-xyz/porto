@@ -111,6 +111,7 @@ export const fromSerializedSpendPeriod = {
   3: 'week',
   4: 'month',
   5: 'year',
+  6: 'forever',
 } as const
 
 /** Key type to Relay key type mapping. */
@@ -138,6 +139,7 @@ export const toSerializedKeyType = {
 /** Period to serialized (contract-compatible) spend period mapping. */
 export const toSerializedSpendPeriod = {
   day: 2,
+  forever: 6,
   hour: 1,
   minute: 0,
   month: 4,

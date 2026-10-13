@@ -550,7 +550,15 @@ describe('Request', () => {
   })
 
   test('behavior: parses valid request with different spend periods', () => {
-    const periods = ['minute', 'hour', 'day', 'week', 'month', 'year'] as const
+    const periods = [
+      'minute',
+      'hour',
+      'day',
+      'week',
+      'month',
+      'year',
+      'forever',
+    ] as const
 
     for (const period of periods) {
       const result = z.parse(Permissions.Request, {
@@ -857,7 +865,8 @@ describe('Request', () => {
         - Expected "day"
         - Expected "week"
         - Expected "month"
-        - Expected "year"]
+        - Expected "year"
+        - Expected "forever"]
     `,
     )
   })

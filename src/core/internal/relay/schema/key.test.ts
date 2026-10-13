@@ -303,6 +303,7 @@ describe('WithPermissions', () => {
           - Expected "week"
           - Expected "month"
           - Expected "year"
+          - Expected "forever"
         - at \`type\`: Expected "spend"]
     `,
     )
