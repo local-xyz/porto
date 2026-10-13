@@ -7,6 +7,8 @@ interface Environment {
 }
 
 interface ImportMetaEnv extends Environment {
+  readonly VITE_ONRAMP_OPTIONS?: string
+  readonly VITE_ONRAMP_URL?: string
   readonly FORCE_REDUCED_MOTION: boolean
 }
 

@@ -16,7 +16,7 @@ import * as Tokens from '~/lib/Tokens'
 import { Layout } from '~/routes/-components/Layout'
 import TriangleAlertIcon from '~icons/lucide/triangle-alert'
 import Star from '~icons/ph/star-four-bold'
-import { ApplePayButton, ApplePayIframe } from './ActionPreview'
+import { ApplePayButton, ApplePayIframe, OnrampConsent } from './ActionPreview'
 import { GuestCheckoutSection } from './GuestCheckoutSection'
 import { SetupApplePay } from './SetupApplePay'
 
@@ -43,11 +43,8 @@ export function AddFunds(props: AddFunds.Props) {
   const address = props.address ?? account?.address
   const chain = RemoteHooks.useChain(porto, { chainId })
 
-  const { createOrder, lastOrderEvent } = useOnrampOrder({
-    onApprove,
-    // TODO(onramp): Flip to `false`
-    sandbox: false,
-  })
+  const { createOrder, iframeRef, lastOrderEvent, orderError } =
+    useOnrampOrder()
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
 
   const showApplePay = useShowApplePay(createOrder.error)
@@ -73,41 +70,10 @@ export function AddFunds(props: AddFunds.Props) {
   })
 
   const queryClient = useQueryClient()
-  // biome-ignore lint/correctness/useExhaustiveDependencies: explanation
-  const onCompleteOnrampSetup = React.useCallback(() => {
-    if (!address) throw new Error('address is required')
-    const timestamp = Math.floor(Date.now() / 1000)
-    queryClient.setQueryData(
-      ['onrampStatus', address],
-      {
-        email: onrampStatus?.email ?? timestamp,
-        phone: onrampStatus?.phone ?? timestamp,
-      },
-      {},
-    )
-    createOrder.mutate(
-      { address, amount: value ?? '10' },
-      {
-        onSuccess() {
-          setView('default')
-        },
-      },
-    )
-  }, [address, value, onrampStatus])
-
-  // create onramp order if onramp status is valid
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keep stable
-  React.useEffect(() => {
-    if (!address) return
-    if (
-      onrampStatus?.email &&
-      onrampStatus.phone &&
-      !onrampStatus.reverifyPhone
-    ) {
-      setIframeLoaded(false)
-      createOrder.mutate({ address, amount: value ?? '10' })
-    }
-  }, [address, onrampStatus])
+  const onCompleteOnrampSetup = () => {
+    void queryClient.invalidateQueries({ queryKey: ['onrampStatus', address] })
+    setView('default')
+  }
 
   const { data: tokens } = Tokens.getTokens.useQuery()
   const { data: assets, refetch: refetchAssets } = Hooks.useAssets({
@@ -246,20 +212,37 @@ export function AddFunds(props: AddFunds.Props) {
             onrampStatus.phone &&
             !onrampStatus.reverifyPhone ? (
               <div className="flex w-full flex-col">
+                <OnrampConsent
+                  amount={value ?? '10'}
+                  completed={
+                    lastOrderEvent?.eventName === 'onramp_api.polling_success'
+                  }
+                  error={createOrder.error}
+                  event={lastOrderEvent}
+                  onStart={() => {
+                    setIframeLoaded(false)
+                    createOrder.mutate({ address, amount: value ?? '10' })
+                  }}
+                  pending={createOrder.isPending}
+                  providerError={orderError}
+                />
                 {createOrder.isSuccess && createOrder.data?.url && (
                   <ApplePayIframe
+                    iframeRef={iframeRef}
                     lastOrderEvent={lastOrderEvent}
                     loaded={iframeLoaded}
                     setLoaded={setIframeLoaded}
                     src={createOrder.data.url}
                   />
                 )}
-                {(!iframeLoaded ||
-                  lastOrderEvent?.eventName ===
-                    'onramp_api.apple_pay_button_pressed' ||
-                  lastOrderEvent?.eventName === 'onramp_api.polling_start') && (
-                  <ApplePayButton label="Buy with" loading />
-                )}
+                {createOrder.data &&
+                  (!iframeLoaded ||
+                    lastOrderEvent?.eventName ===
+                      'onramp_api.apple_pay_button_pressed' ||
+                    lastOrderEvent?.eventName ===
+                      'onramp_api.polling_start') && (
+                    <ApplePayButton label="Buy with" loading />
+                  )}
               </div>
             ) : (
               <ApplePayButton

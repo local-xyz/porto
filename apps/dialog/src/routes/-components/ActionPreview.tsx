@@ -18,6 +18,7 @@ import {
   useOnrampOrder,
   useShowApplePay,
 } from '~/lib/onramp'
+import { onrampUsdAmount } from '~/lib/onramp-amount'
 import { porto } from '~/lib/Porto'
 import { ValueFormatter } from '~/utils'
 import LucideInfo from '~icons/lucide/info'
@@ -54,7 +55,7 @@ export function ActionPreview(props: ActionPreview.Props) {
 
   const depositAddress = deficit?.address || account
   const fiatDepositValue = React.useMemo(() => {
-    if (deficit?.amount?.fiat) return deficit.amount.fiat
+    if (deficit?.amount?.onrampUsd) return deficit.amount.onrampUsd
     const [amount, symbol] = deficit?.amount?.rounded.split(' ') ?? []
     if (amount && symbol) {
       if (symbol !== 'USDC' && symbol !== 'USDT') return
@@ -73,19 +74,12 @@ export function ActionPreview(props: ActionPreview.Props) {
     },
   })
 
-  const onApprove = React.useCallback(async () => {
-    onQuotesRefetch?.()
-    await Query.client.invalidateQueries({
-      queryKey: ['prepareCalls'], // see Calls.prepareCalls.queryOptions.queryKey()
-    })
-  }, [onQuotesRefetch])
-  const { createOrder, lastOrderEvent } = useOnrampOrder({
-    onApprove,
-    sandbox: false,
-  })
+  const { createOrder, iframeRef, lastOrderEvent, orderError } =
+    useOnrampOrder()
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
 
-  const showApplePay = useShowApplePay(createOrder.error)
+  const applePayEnabled = useShowApplePay(createOrder.error)
+  const showApplePay = applePayEnabled && Boolean(fiatDepositValue)
   const client = RemoteHooks.useRelayClient(porto)
   const { data: onrampStatus } = useQuery({
     enabled: Boolean(showApplePay && depositAddress),
@@ -110,44 +104,12 @@ export function ActionPreview(props: ActionPreview.Props) {
   })
 
   const queryClient = useQueryClient()
-  // biome-ignore lint/correctness/useExhaustiveDependencies: explanation
-  const onCompleteOnrampSetup = React.useCallback(() => {
-    if (!depositAddress) throw new Error('address is required')
-    if (!fiatDepositValue) throw new Error('amount is required')
-    const timestamp = Math.floor(Date.now() / 1000)
-    queryClient.setQueryData(
-      ['onrampStatus', depositAddress],
-      {
-        email: onrampStatus?.email ?? timestamp,
-        phone: onrampStatus?.phone ?? timestamp,
-      },
-      {},
-    )
-    createOrder.mutate(
-      { address: depositAddress, amount: fiatDepositValue },
-      {
-        onSuccess() {
-          setView('default')
-        },
-      },
-    )
-  }, [depositAddress, fiatDepositValue, onrampStatus])
-
-  // create onramp order if onramp status is valid
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keep stable
-  React.useEffect(() => {
-    if (!depositAddress) return
-    if (!fiatDepositValue) return
-    if (
-      onrampStatus?.email &&
-      onrampStatus.phone &&
-      !onrampStatus.reverifyPhone &&
-      !createOrder.isPending
-    ) {
-      setIframeLoaded(false)
-      createOrder.mutate({ address: depositAddress, amount: fiatDepositValue })
-    }
-  }, [depositAddress, fiatDepositValue, onrampStatus])
+  const onCompleteOnrampSetup = () => {
+    void queryClient.invalidateQueries({
+      queryKey: ['onrampStatus', depositAddress],
+    })
+    setView('default')
+  }
 
   if (view === 'setup-onramp')
     return (
@@ -173,7 +135,7 @@ export function ActionPreview(props: ActionPreview.Props) {
         onReject={() => {
           setShowAddFunds(false)
         }}
-        value={deficit.amount?.fiat}
+        value={fiatDepositValue}
       />
     )
 
@@ -198,10 +160,23 @@ export function ActionPreview(props: ActionPreview.Props) {
             onAddFunds={() => setShowAddFunds(true)}
             onReject={onReject}
             onramp={{
+              amount: fiatDepositValue,
+              error: createOrder.error,
               iframeLoaded,
+              iframeRef,
               lastOrderEvent,
+              pending: createOrder.isPending,
+              providerError: orderError,
               setIframeLoaded,
               setView,
+              start: () => {
+                if (!depositAddress || !fiatDepositValue) return
+                setIframeLoaded(false)
+                createOrder.mutate({
+                  address: depositAddress,
+                  amount: fiatDepositValue,
+                })
+              },
               status: onrampStatus,
               url: createOrder.data?.url,
             }}
@@ -243,6 +218,7 @@ export namespace ActionPreview {
   export type DeficitAmount = {
     exact: string
     fiat?: string
+    onrampUsd?: string
     needed: bigint
     rounded: string
   }
@@ -376,7 +352,13 @@ function useDeficit(
       firstDeficit.fiat &&
       `${firstDeficit.fiat.currency}${(Number.parseFloat(firstDeficit.fiat.value) * 1.05).toFixed(2)}`
 
-    return { exact, fiat, needed, rounded }
+    return {
+      exact,
+      fiat,
+      needed,
+      onrampUsd: onrampUsdAmount(firstDeficit.fiat),
+      rounded,
+    }
   }, [deficit])
 
   if (!deficit) return null
@@ -390,6 +372,12 @@ function FundsNeededSection(props: {
   onAddFunds: () => void
   showApplePay: boolean
   onramp: {
+    amount?: string | undefined
+    iframeRef: React.RefObject<HTMLIFrameElement | null>
+    error: Error | null
+    providerError?: string | undefined
+    pending: boolean
+    start: () => void
     iframeLoaded: boolean
     lastOrderEvent?: CbPostMessageSchema | undefined
     setIframeLoaded: (iframeLoaded: boolean) => void
@@ -499,21 +487,35 @@ function FundsNeededSection(props: {
         onramp.status.phone &&
         !onramp.status.reverifyPhone ? (
           <div className="flex w-full flex-col">
+            <OnrampConsent
+              amount={onramp.amount}
+              completed={
+                onramp.lastOrderEvent?.eventName ===
+                'onramp_api.polling_success'
+              }
+              error={onramp.error}
+              event={onramp.lastOrderEvent}
+              onStart={onramp.start}
+              pending={onramp.pending}
+              providerError={onramp.providerError}
+            />
             {onramp.url && (
               <ApplePayIframe
+                iframeRef={onramp.iframeRef}
                 lastOrderEvent={onramp.lastOrderEvent}
                 loaded={onramp.iframeLoaded}
                 setLoaded={onramp.setIframeLoaded}
                 src={onramp.url}
               />
             )}
-            {(!onramp.iframeLoaded ||
-              onramp.lastOrderEvent?.eventName ===
-                'onramp_api.apple_pay_button_pressed' ||
-              onramp.lastOrderEvent?.eventName ===
-                'onramp_api.polling_start') && (
-              <ApplePayButton label="Buy with" loading />
-            )}
+            {onramp.url &&
+              (!onramp.iframeLoaded ||
+                onramp.lastOrderEvent?.eventName ===
+                  'onramp_api.apple_pay_button_pressed' ||
+                onramp.lastOrderEvent?.eventName ===
+                  'onramp_api.polling_start') && (
+                <ApplePayButton label="Buy with" loading />
+              )}
           </div>
         ) : (
           <ApplePayButton
@@ -584,7 +586,73 @@ export function ApplePayButton(
   )
 }
 
+export function OnrampConsent(props: {
+  amount?: string | undefined
+  onStart: () => void
+  pending: boolean
+  error: Error | null
+  completed: boolean
+  event?: CbPostMessageSchema | undefined
+  providerError?: string | undefined
+}) {
+  return (
+    <div className="flex flex-col gap-2 text-sm">
+      <p>
+        Simulate a {props.amount} USD purchase. No card charge or funds
+        delivered, including on Base Sepolia.
+      </p>
+      <p>
+        By continuing, you authorize sharing your verified email and phone with
+        Coinbase and accept its{' '}
+        <a
+          href="https://www.coinbase.com/legal/user_agreement"
+          rel="noreferrer"
+          target="_blank"
+        >
+          User Agreement
+        </a>
+        ,{' '}
+        <a
+          href="https://www.coinbase.com/legal/guest-checkout/us"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Guest Checkout Terms
+        </a>
+        , and{' '}
+        <a
+          href="https://www.coinbase.com/legal/privacy"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Privacy Policy
+        </a>
+        .
+      </p>
+      {props.completed ? (
+        <output>Sandbox checkout completed. No funds were delivered.</output>
+      ) : (
+        <Button
+          disabled={props.pending}
+          loading={props.pending}
+          onClick={props.onStart}
+        >
+          Start sandbox checkout
+        </Button>
+      )}
+      {props.error && <p role="alert">{props.error.message}</p>}
+      {props.providerError && <p role="alert">{props.providerError}</p>}
+      {props.event?.eventName === 'onramp_api.commit_success' && (
+        <output>
+          Sandbox payment authorized. Waiting for the simulation to complete.
+        </output>
+      )}
+    </div>
+  )
+}
+
 export function ApplePayIframe(props: {
+  iframeRef: React.RefObject<HTMLIFrameElement | null>
   loaded: boolean
   lastOrderEvent?: CbPostMessageSchema | undefined
   setLoaded: (iframeLoaded: boolean) => void
@@ -597,7 +665,7 @@ export function ApplePayIframe(props: {
   )
   return (
     <iframe
-      {...(!UserAgent.isFirefox() && { allow: 'payment' })}
+      allow="payment"
       className={cx(
         'h-12.5 w-full overflow-hidden border-0 bg-transparent!',
         lastOrderEvent?.eventName === 'onramp_api.apple_pay_button_pressed' ||
@@ -608,7 +676,11 @@ export function ApplePayIframe(props: {
           : 'w-full border-0 bg-transparent',
         !loaded && 'sr-only!',
       )}
+      key={src}
       onLoad={() => setLoaded(true)}
+      ref={props.iframeRef}
+      referrerPolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin"
       src={src}
       title="Apple Pay Onramp"
     />

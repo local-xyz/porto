@@ -1,5 +1,5 @@
 import { Button, Input, OtpInput, TextButton } from '@porto/ui'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Hooks } from 'porto/remote'
 import { RelayActions } from 'porto/viem'
 import * as React from 'react'
@@ -17,7 +17,7 @@ export function SetupApplePay(props: SetupApplePay.Props) {
     onComplete,
   } = props
 
-  const [screen, setScreen] = React.useState<'phone-email' | 'otp'>(
+  const [screen, setScreen] = React.useState<'phone-email' | 'otp' | 'email'>(
     'phone-email',
   )
   const [email, setEmail] = React.useState('')
@@ -34,6 +34,24 @@ export function SetupApplePay(props: SetupApplePay.Props) {
     (showEmail ? isValidEmail : true) && (showPhone ? isValidPhone : true)
 
   const client = Hooks.useRelayClient(porto)
+  const emailVerification = useQuery({
+    enabled: screen === 'email',
+    queryFn: () => RelayActions.onrampStatus(client, { address }),
+    queryKey: ['onrampEmailVerification', address],
+    refetchInterval: screen === 'email' ? 3_000 : false,
+    retry: false,
+  })
+  React.useEffect(() => {
+    const verifiedAt = emailVerification.data?.email
+    if (
+      screen === 'email' &&
+      verifiedAt &&
+      verifiedAt > 0 &&
+      verifiedAt <= Date.now() / 1_000
+    )
+      onComplete()
+  }, [screen, emailVerification.data?.email, onComplete])
+
   const setInfo = useMutation<
     void,
     BaseError,
@@ -93,12 +111,9 @@ export function SetupApplePay(props: SetupApplePay.Props) {
     setInfo.mutate(
       { email, phone },
       {
-        onError(error) {
-          console.log('onError', error)
-        },
         onSuccess() {
           if (showPhone) setScreen('otp')
-          else if (showEmail) onComplete()
+          else if (showEmail) setScreen('email')
         },
       },
     )
@@ -124,13 +139,47 @@ export function SetupApplePay(props: SetupApplePay.Props) {
           },
           onSuccess() {
             setOtpCompleted(true)
-            onComplete()
+            if (showEmail) setScreen('email')
+            else onComplete()
           },
         },
       )
     },
-    [phone, onComplete],
+    [phone, onComplete, showEmail],
   )
+
+  if (screen === 'email')
+    return (
+      <Layout>
+        <Layout.Header>
+          <Layout.Header.Default
+            content={`Open the confirmation link sent to ${email}. This screen will continue once your email is verified.`}
+            icon={LucideAsterisk}
+            title="Check your email"
+          />
+        </Layout.Header>
+        <Layout.Footer>
+          <Layout.Footer.Actions>
+            <Button onClick={onBack} variant="secondary" width="grow">
+              Back
+            </Button>
+            <Button
+              loading={emailVerification.isFetching}
+              onClick={() => void emailVerification.refetch()}
+              variant="primary"
+              width="grow"
+            >
+              Check again
+            </Button>
+          </Layout.Footer.Actions>
+        </Layout.Footer>
+        {emailVerification.isError && (
+          <p className="px-3 pb-3 text-center text-[14px] text-th_base-negative">
+            Unable to check verification. Please try again.
+          </p>
+        )}
+      </Layout>
+    )
 
   if (screen === 'otp')
     return (
