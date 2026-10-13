@@ -1,11 +1,11 @@
 {
-  "commit": "029d350163e18735f0d18dc09ea46cbc19d5cfc6",
+  "commit": "64798c4e2ed3b6133abaa6d7717da2b9dd938b7f",
   "contracts": {
-    "commit": "c37349a8632d2f3498308217ff9f8d7bf7172e4f"
+    "commit": "1acf5122f438930ba03ec82ff123fe682ce70195"
   },
-  "digest": "sha256:1b4f9507c18d9393af7b80a29f22496816c4139bd03f31340dcc032bc70a1785",
+  "digest": "sha256:21ed30ce2d06511e1ecc3f657f967f1b069aa3b06496654e204109041838b34d",
   "image": "ghcr.io/local-xyz/grid-relay",
   "repository": "local-xyz/grid",
   "schema": 1,
-  "tag": "029d350"
+  "tag": "64798c4"
 }
