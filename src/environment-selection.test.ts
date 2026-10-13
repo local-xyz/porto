@@ -1,4 +1,4 @@
-import { baseSepolia } from 'viem/chains'
+import { baseSepolia, optimismSepolia } from 'viem/chains'
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import { selectChainEnvironments } from '../scripts/chains-environment.js'
 
@@ -36,12 +36,16 @@ describe('staging Porto environment', () => {
     expect(getPortoConfig().storageKey).toBe('porto.store.stg')
   })
 
-  test('supports Base Sepolia only', () => {
+  test('supports Base Sepolia and Optimism Sepolia', () => {
     const config = getPortoConfig('stg')
 
-    expect(config.chains.map((chain) => chain.id)).toEqual([baseSepolia.id])
+    expect(config.chains.map((chain) => chain.id)).toEqual([
+      baseSepolia.id,
+      optimismSepolia.id,
+    ])
     expect(Object.keys(config.transports ?? {}).map(Number)).toEqual([
       baseSepolia.id,
+      optimismSepolia.id,
     ])
   })
 })

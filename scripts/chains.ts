@@ -20,7 +20,7 @@ const environments = [
     },
   },
   {
-    chains: ['baseSepolia'],
+    chains: ['baseSepolia', 'optimismSepolia'],
     name: 'stg',
     rpc: 'https://relay-staging.localprotocol.xyz',
     transportOverrides: {},

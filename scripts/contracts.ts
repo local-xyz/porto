@@ -13,7 +13,7 @@ import * as Path from 'node:path'
  * `commit` to build from it instead of fetching.
  */
 const repository = 'https://github.com/local-xyz/contracts.git'
-export const commit = 'c37349a8632d2f3498308217ff9f8d7bf7172e4f'
+export const commit = '3d19a5d5745a45f5570a1bc3ce574f2fe575f5c2'
 
 type ContractArtifact = {
   abi: readonly unknown[]
