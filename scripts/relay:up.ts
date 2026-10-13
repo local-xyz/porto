@@ -42,15 +42,18 @@ if (!digest?.startsWith('sha256:'))
   throw new Error(`Could not resolve the digest for ${reference}`)
 
 // Grid pins local-xyz/contracts in its xtask; its committed bindings are generated from that commit.
-const gridContractsSource = Buffer.from(
-  run('gh', [
-    'api',
-    `repos/${repository}/contents/crates/relay/tools/xtask/src/contracts.rs?ref=${commit}`,
-    '--jq',
-    '.content',
-  ]).replaceAll('\n', ''),
-  'base64',
-).toString('utf8')
+// The xtask lives at the workspace root; older Grid commits kept it under the relay crate.
+const gridContractsPaths = [
+  'xtask/src/contracts.rs',
+  'crates/relay/tools/xtask/src/contracts.rs',
+]
+const gridContractsSource = gridContractsPaths
+  .map((path) => readGridFile(path, commit))
+  .find((source) => source !== undefined)
+if (!gridContractsSource)
+  throw new Error(
+    `Could not find the xtask contracts pin in ${repository}@${commit} (tried ${gridContractsPaths.join(', ')}).`,
+  )
 const gridContractsCommit = gridContractsSource.match(
   /pub const COMMIT: &str = "([0-9a-f]{40})";/,
 )?.[1]
@@ -95,6 +98,27 @@ runInherited('pnpm', ['build:contracts'])
 runInherited('pnpm', ['build:anvil-state'])
 
 console.log(`Pinned ${reference} at ${digest}.`)
+
+/** Reads a file from the Grid repository at `ref`, or `undefined` if it does not exist there. */
+function readGridFile(path: string, ref: string) {
+  const result = ChildProcess.spawnSync(
+    'gh',
+    [
+      'api',
+      `repos/${repository}/contents/${path}?ref=${ref}`,
+      '--jq',
+      '.content',
+    ],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+  )
+  if (result.status !== 0) {
+    if (result.stderr.includes('404')) return undefined
+    throw new Error(`gh api ${path}@${ref} failed: ${result.stderr.trim()}`)
+  }
+  return Buffer.from(result.stdout.replaceAll('\n', ''), 'base64').toString(
+    'utf8',
+  )
+}
 
 function run(command: string, args: string[]) {
   const result = ChildProcess.spawnSync(command, args, {
